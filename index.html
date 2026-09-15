@@ -1,780 +1,230 @@
+```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
->
-
-<title>Grapple Arena 3D</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Grapple Arena</title>
 
 <style>
+*{box-sizing:border-box}
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#111;
+    font-family:Arial,sans-serif;
+    touch-action:none;
+}
+canvas{
+    display:block;
+    width:100%;
+    height:100%;
+    background:#17202a;
+}
+#hud{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    color:white;
+}
+#top{
+    position:absolute;
+    top:15px;
+    left:15px;
+    padding:10px 14px;
+    border-radius:10px;
+    background:rgba(0,0,0,.55);
+    font-size:18px;
+    font-weight:bold;
+}
+#help{
+    position:absolute;
+    top:15px;
+    right:15px;
+    padding:10px 14px;
+    border-radius:10px;
+    background:rgba(0,0,0,.55);
+    text-align:right;
+    font-size:13px;
+}
+#crosshair{
+    position:absolute;
+    left:50%;
+    top:50%;
+    width:28px;
+    height:28px;
+    transform:translate(-50%,-50%);
+}
+#crosshair:before,
+#crosshair:after{
+    content:"";
+    position:absolute;
+    background:white;
+    box-shadow:0 0 5px black;
+}
+#crosshair:before{
+    width:2px;
+    height:28px;
+    left:13px;
+}
+#crosshair:after{
+    width:28px;
+    height:2px;
+    top:13px;
+}
+#message{
+    position:absolute;
+    top:18%;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:32px;
+    font-weight:bold;
+    text-shadow:0 3px 8px black;
+    opacity:0;
+    transition:.2s;
+}
+#message.show{opacity:1}
 
-* {
-    box-sizing: border-box;
+#mobile{
+    display:none;
+}
+#joystick{
+    position:fixed;
+    left:25px;
+    bottom:25px;
+    width:140px;
+    height:140px;
+    border:3px solid rgba(255,255,255,.35);
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    pointer-events:auto;
+}
+#stick{
+    position:absolute;
+    width:60px;
+    height:60px;
+    left:37px;
+    top:37px;
+    border-radius:50%;
+    background:rgba(255,255,255,.4);
+}
+#buttons{
+    position:fixed;
+    right:20px;
+    bottom:25px;
+    display:flex;
+    gap:12px;
+    pointer-events:auto;
+}
+button{
+    border:0;
+    color:white;
+    background:rgba(20,120,200,.8);
+    border-radius:16px;
+    font-weight:bold;
+    font-size:15px;
+}
+#grapple{
+    width:110px;
+    height:70px;
+}
+#pulse{
+    width:80px;
+    height:80px;
+    border-radius:50%;
 }
 
-html,
-body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #05080d;
-    font-family: Arial, Helvetica, sans-serif;
-    touch-action: none;
+@media(pointer:coarse){
+    #mobile{display:block}
+    #help{display:none}
 }
-
-canvas {
-    display: block;
-}
-
-#hud {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    color: white;
-    text-shadow:
-        0 2px 5px rgba(0,0,0,.9);
-}
-
-/* -------------------------
-   CROSSHAIR
-------------------------- */
-
-#crosshair {
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    width: 28px;
-    height: 28px;
-
-    transform: translate(-50%, -50%);
-}
-
-#crosshair::before,
-#crosshair::after {
-    content: "";
-
-    position: absolute;
-
-    background: white;
-
-    box-shadow:
-        0 0 5px rgba(255,255,255,.8);
-}
-
-#crosshair::before {
-    width: 2px;
-    height: 28px;
-
-    left: 13px;
-    top: 0;
-}
-
-#crosshair::after {
-    width: 28px;
-    height: 2px;
-
-    left: 0;
-    top: 13px;
-}
-
-/* -------------------------
-   HUD
-------------------------- */
-
-#stats {
-    position: absolute;
-
-    top: 15px;
-    left: 15px;
-
-    font-size: 18px;
-    font-weight: bold;
-
-    background: rgba(0,0,0,.25);
-
-    padding: 9px 12px;
-
-    border-radius: 10px;
-
-    backdrop-filter: blur(5px);
-}
-
-#help {
-    position: absolute;
-
-    right: 15px;
-    top: 15px;
-
-    text-align: right;
-
-    font-size: 13px;
-
-    line-height: 1.55;
-
-    opacity: .9;
-
-    background: rgba(0,0,0,.25);
-
-    padding: 9px 12px;
-
-    border-radius: 10px;
-
-    backdrop-filter: blur(5px);
-}
-
-/* -------------------------
-   MESSAGE
-------------------------- */
-
-#message {
-    position: absolute;
-
-    left: 50%;
-    top: 18%;
-
-    transform: translateX(-50%);
-
-    font-size: 34px;
-
-    font-weight: 900;
-
-    letter-spacing: 2px;
-
-    text-align: center;
-
-    opacity: 0;
-
-    transition: opacity .15s;
-}
-
-#message.show {
-    opacity: 1;
-}
-
-/* -------------------------
-   HAND
-------------------------- */
-
-#hand {
-    position: absolute;
-
-    right: 4%;
-    bottom: -5%;
-
-    width: 180px;
-    height: 230px;
-
-    pointer-events: none;
-
-    transform-origin: 75% 100%;
-
-    transition:
-        transform .08s ease;
-}
-
-/* Unterarm */
-
-#arm {
-    position: absolute;
-
-    right: 35px;
-    bottom: -15px;
-
-    width: 70px;
-    height: 170px;
-
-    border-radius:
-        35px 35px 10px 10px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #182432,
-            #34475b,
-            #182432
-        );
-
-    transform:
-        rotate(-17deg);
-
-    box-shadow:
-        inset 0 0 15px rgba(255,255,255,.12),
-        0 8px 20px rgba(0,0,0,.5);
-}
-
-/* Handschuh */
-
-#glove {
-    position: absolute;
-
-    right: 35px;
-    top: 35px;
-
-    width: 100px;
-    height: 90px;
-
-    border-radius:
-        30px 30px 40px 40px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #28394d,
-            #536b84,
-            #1a2635
-        );
-
-    transform:
-        rotate(-10deg);
-
-    box-shadow:
-        inset 0 0 15px rgba(255,255,255,.12),
-        0 8px 20px rgba(0,0,0,.55);
-}
-
-/* Finger */
-
-#finger {
-    position: absolute;
-
-    right: -5px;
-    top: 20px;
-
-    width: 65px;
-    height: 25px;
-
-    border-radius: 20px;
-
-    background: #607991;
-
-    transform:
-        rotate(-20deg);
-}
-
-/* Grapple crystal */
-
-#crystal {
-    position: absolute;
-
-    left: 29px;
-    top: 25px;
-
-    width: 40px;
-    height: 40px;
-
-    transform: rotate(45deg);
-
-    background:
-        linear-gradient(
-            135deg,
-            #5df7ff,
-            #1a9fff
-        );
-
-    box-shadow:
-        0 0 12px #25cfff,
-        0 0 30px rgba(37,207,255,.7);
-}
-
-/* -------------------------
-   MOBILE
-------------------------- */
-
-#mobileUI {
-    display: none;
-}
-
-#joystick {
-    position: fixed;
-
-    left: 25px;
-    bottom: 25px;
-
-    width: 135px;
-    height: 135px;
-
-    border:
-        2px solid rgba(255,255,255,.3);
-
-    border-radius: 50%;
-
-    background:
-        rgba(255,255,255,.08);
-
-    pointer-events: auto;
-}
-
-#stick {
-    position: absolute;
-
-    left: 37px;
-    top: 37px;
-
-    width: 60px;
-    height: 60px;
-
-    border-radius: 50%;
-
-    background:
-        rgba(255,255,255,.35);
-
-    box-shadow:
-        0 0 15px rgba(255,255,255,.15);
-}
-
-#mobileButtons {
-    position: fixed;
-
-    right: 20px;
-    bottom: 25px;
-
-    display: flex;
-
-    gap: 12px;
-
-    pointer-events: auto;
-}
-
-.mobileButton {
-    border: none;
-
-    color: white;
-
-    font-weight: 900;
-
-    font-size: 13px;
-
-    border-radius: 16px;
-
-    padding: 18px;
-
-    background:
-        rgba(255,255,255,.2);
-
-    backdrop-filter: blur(8px);
-
-    box-shadow:
-        0 5px 15px rgba(0,0,0,.3);
-}
-
-#grappleButton {
-    width: 105px;
-    height: 70px;
-}
-
-#pulseButton {
-    width: 85px;
-    height: 85px;
-
-    border-radius: 50%;
-
-    background:
-        rgba(40,170,255,.55);
-}
-
-/* Mobile */
-
-@media (pointer: coarse) {
-
-    #mobileUI {
-        display: block;
-    }
-
-    #help {
-        display: none;
-    }
-
-    #hand {
-        width: 140px;
-        height: 190px;
-
-        right: -5%;
-    }
-
-}
-
 </style>
 </head>
 
 <body>
 
-<div id="hud">
+<canvas id="game"></canvas>
 
-    <div id="stats">
+<div id="hud">
+    <div id="top">
         ❤️ <span id="hp">100</span>
-        &nbsp; | &nbsp;
-        ⭐ <span id="score">0</span>
-        &nbsp; | &nbsp;
-        🤖 <span id="enemyCount">0</span>
+        &nbsp; ⭐ <span id="score">0</span>
+        &nbsp; 🤖 <span id="enemies">0</span>
     </div>
 
     <div id="help">
-        WASD – bewegen<br>
-        Maus – schauen<br>
-        G – Grapple<br>
-        E / Linksklick – Impuls<br>
-        R – Neustart
+        WASD = Bewegen<br>
+        Maus = Zielen<br>
+        Linksklick / E = Impuls<br>
+        G = Grapple<br>
+        R = Neustart
     </div>
 
     <div id="crosshair"></div>
-
     <div id="message"></div>
-
 </div>
 
-
-<!-- HAND -->
-
-<div id="hand">
-
-    <div id="arm"></div>
-
-    <div id="glove">
-
-        <div id="finger"></div>
-
-        <div id="crystal"></div>
-
-    </div>
-
-</div>
-
-
-<!-- MOBILE -->
-
-<div id="mobileUI">
+<div id="mobile">
 
     <div id="joystick">
-
         <div id="stick"></div>
-
     </div>
 
-    <div id="mobileButtons">
-
-        <button
-            class="mobileButton"
-            id="grappleButton"
-        >
-            🪝 GRAPPLE
-        </button>
-
-        <button
-            class="mobileButton"
-            id="pulseButton"
-        >
-            ⚡
-        </button>
-
+    <div id="buttons">
+        <button id="grapple">🪝 GRAPPLE</button>
+        <button id="pulse">⚡</button>
     </div>
 
 </div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.min.js"></script>
-
 
 <script>
 
-/* =====================================================
-   SETUP
-===================================================== */
-
-const scene =
-    new THREE.Scene();
-
-scene.background =
-    new THREE.Color(0x07101b);
-
-scene.fog =
-    new THREE.Fog(
-        0x07101b,
-        35,
-        150
-    );
-
-
-/* CAMERA */
-
-const camera =
-    new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth /
-        window.innerHeight,
-        .1,
-        350
-    );
-
-
-/* RENDERER */
-
-const renderer =
-    new THREE.WebGLRenderer({
-        antialias: true,
-        powerPreference: "high-performance"
-    });
-
-renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
-);
-
-renderer.setPixelRatio(
-    Math.min(
-        window.devicePixelRatio,
-        1.5
-    )
-);
-
-renderer.outputColorSpace =
-    THREE.SRGBColorSpace;
-
-document.body.prepend(
-    renderer.domElement
-);
-
+"use strict";
 
 /* =====================================================
-   LIGHTING
+   CANVAS
 ===================================================== */
 
-scene.add(
-    new THREE.HemisphereLight(
-        0x9bc8ff,
-        0x17202c,
-        2
-    )
-);
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-const sun =
-    new THREE.DirectionalLight(
-        0xffffff,
-        2.2
-    );
+let W = 0;
+let H = 0;
 
-sun.position.set(
-    25,
-    40,
-    15
-);
+function resize(){
+    W = window.innerWidth;
+    H = window.innerHeight;
 
-scene.add(sun);
+    const dpr = Math.min(window.devicePixelRatio || 1,2);
 
+    canvas.width = W*dpr;
+    canvas.height = H*dpr;
 
-/* =====================================================
-   GROUND
-===================================================== */
+    canvas.style.width = W+"px";
+    canvas.style.height = H+"px";
 
-const ground =
-    new THREE.Mesh(
-
-        new THREE.PlaneGeometry(
-            240,
-            240
-        ),
-
-        new THREE.MeshStandardMaterial({
-            color: 0x182431,
-            roughness: .9
-        })
-
-    );
-
-ground.rotation.x =
-    -Math.PI / 2;
-
-scene.add(ground);
-
-
-/* GRID */
-
-const grid =
-    new THREE.GridHelper(
-        240,
-        48,
-        0x476176,
-        0x273846
-    );
-
-grid.position.y =
-    .015;
-
-scene.add(grid);
-
-
-/* =====================================================
-   ARENA
-===================================================== */
-
-const obstacles = [];
-
-
-function createBuilding(
-    x,
-    z,
-    width,
-    height,
-    depth
-) {
-
-    const material =
-        new THREE.MeshStandardMaterial({
-            color:
-                new THREE.Color()
-                    .setHSL(
-                        .58,
-                        .18,
-                        .22 +
-                        Math.random() * .08
-                    )
-        });
-
-
-    const building =
-        new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-                width,
-                height,
-                depth
-            ),
-
-            material
-
-        );
-
-
-    building.position.set(
-        x,
-        height / 2,
-        z
-    );
-
-
-    scene.add(building);
-
-    obstacles.push(
-        building
-    );
-
-
-    /* Dachlicht */
-
-    const light =
-        new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-                width * .55,
-                .12,
-                .12
-            ),
-
-            new THREE.MeshBasicMaterial({
-                color: 0x35cfff
-            })
-
-        );
-
-
-    light.position.set(
-        x,
-        height + .08,
-        z
-    );
-
-
-    scene.add(light);
-
+    ctx.setTransform(dpr,0,0,dpr,0,0);
 }
 
-
-for (
-    let i = 0;
-    i < 28;
-    i++
-) {
-
-    const x =
-        (Math.random() - .5) *
-        180;
-
-    const z =
-        (Math.random() - .5) *
-        180;
-
-
-    if (
-        Math.hypot(x,z) <
-        18
-    ) {
-        i--;
-        continue;
-    }
-
-
-    createBuilding(
-
-        x,
-        z,
-
-        4 +
-        Math.random() * 7,
-
-        4 +
-        Math.random() * 12,
-
-        4 +
-        Math.random() * 7
-
-    );
-
-}
+window.addEventListener("resize",resize);
+resize();
 
 
 /* =====================================================
    PLAYER
 ===================================================== */
 
-const player =
-    new THREE.Group();
-
-player.position.set(
-    0,
-    1.7,
-    8
-);
-
-scene.add(player);
-
-
-camera.position.set(
-    0,
-    1.55,
-    0
-);
-
-player.add(camera);
-
-
-/* =====================================================
-   PLAYER VARIABLES
-===================================================== */
-
-let yaw = 0;
-
-let pitch = 0;
-
-let hp = 100;
+const player = {
+    x:0,
+    y:0,
+    angle:0,
+    hp:100,
+    speed:5
+};
 
 let score = 0;
-
 let gameOver = false;
 
 
@@ -784,654 +234,260 @@ let gameOver = false;
 
 const keys = {};
 
+window.addEventListener("keydown",function(e){
 
-window.addEventListener(
-    "keydown",
-    e => {
+    keys[e.code] = true;
 
-        keys[e.code] = true;
-
-
-        if (
-            e.code ===
-            "KeyR"
-        ) {
-
-            resetGame();
-
-        }
-
-
-        if (
-            e.code ===
-            "KeyG"
-        ) {
-
-            grapple();
-
-        }
-
-
-        if (
-            e.code ===
-            "KeyE"
-        ) {
-
-            pulse();
-
-        }
-
+    if(e.code === "KeyR"){
+        resetGame();
     }
-);
 
-
-window.addEventListener(
-    "keyup",
-    e => {
-
-        keys[e.code] = false;
-
+    if(e.code === "KeyG"){
+        grapple();
     }
-);
+
+    if(e.code === "KeyE"){
+        pulse();
+    }
+});
+
+window.addEventListener("keyup",function(e){
+    keys[e.code] = false;
+});
 
 
 /* =====================================================
    MOUSE
 ===================================================== */
 
-let locked = false;
+let mouseX = W/2;
+let mouseY = H/2;
 
+canvas.addEventListener("mousemove",function(e){
 
-renderer.domElement.addEventListener(
-    "click",
-    () => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 
-        if (
-            !locked &&
-            matchMedia(
-                "(pointer:fine)"
-            ).matches
-        ) {
+    const dx = mouseX-W/2;
+    const dy = mouseY-H/2;
 
-            renderer.domElement
-                .requestPointerLock();
-
-        } else {
-
-            pulse();
-
-        }
-
+    if(Math.abs(dx)>5){
+        player.angle += dx*0.002;
     }
-);
+
+});
 
 
-document.addEventListener(
-    "pointerlockchange",
-    () => {
+canvas.addEventListener("click",function(){
 
-        locked =
-            document.pointerLockElement ===
-            renderer.domElement;
+    pulse();
 
-    }
-);
-
-
-document.addEventListener(
-    "mousemove",
-    e => {
-
-        if (!locked)
-            return;
-
-
-        yaw -=
-            e.movementX *
-            .0025;
-
-
-        pitch -=
-            e.movementY *
-            .0025;
-
-
-        pitch =
-            Math.max(
-                -1.35,
-                Math.min(
-                    1.35,
-                    pitch
-                )
-            );
-
-    }
-);
+});
 
 
 /* =====================================================
    MOBILE JOYSTICK
 ===================================================== */
 
-let joystickX = 0;
+const joystick = document.getElementById("joystick");
+const stick = document.getElementById("stick");
 
-let joystickY = 0;
+let joyX = 0;
+let joyY = 0;
+let joyPointer = null;
 
+function moveJoystick(e){
 
-const joystick =
-    document.getElementById(
-        "joystick"
-    );
+    const rect = joystick.getBoundingClientRect();
 
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top + rect.height/2;
 
-const stick =
-    document.getElementById(
-        "stick"
-    );
+    let x = e.clientX-cx;
+    let y = e.clientY-cy;
 
+    const max = 45;
 
-function updateJoystick(e) {
+    const len = Math.hypot(x,y);
 
-    const rect =
-        joystick.getBoundingClientRect();
-
-
-    const centerX =
-        rect.left +
-        rect.width / 2;
-
-
-    const centerY =
-        rect.top +
-        rect.height / 2;
-
-
-    let x =
-        e.clientX -
-        centerX;
-
-
-    let y =
-        e.clientY -
-        centerY;
-
-
-    const max =
-        48;
-
-
-    const length =
-        Math.hypot(
-            x,
-            y
-        );
-
-
-    if (
-        length > max
-    ) {
-
-        x =
-            x / length *
-            max;
-
-        y =
-            y / length *
-            max;
-
+    if(len>max){
+        x=x/len*max;
+        y=y/len*max;
     }
 
-
-    joystickX =
-        x / max;
-
-
-    joystickY =
-        y / max;
-
+    joyX=x/max;
+    joyY=y/max;
 
     stick.style.transform =
         `translate(${x}px,${y}px)`;
-
 }
 
+joystick.addEventListener("pointerdown",function(e){
 
-joystick.addEventListener(
-    "pointerdown",
-    e => {
+    joyPointer=e.pointerId;
 
-        joystick.setPointerCapture(
-            e.pointerId
-        );
+    joystick.setPointerCapture(e.pointerId);
 
-        updateJoystick(e);
+    moveJoystick(e);
+});
 
+joystick.addEventListener("pointermove",function(e){
+
+    if(e.pointerId===joyPointer){
+        moveJoystick(e);
     }
-);
 
+});
 
-joystick.addEventListener(
-    "pointermove",
-    e => {
+function stopJoystick(){
 
-        updateJoystick(e);
+    joyX=0;
+    joyY=0;
+    joyPointer=null;
 
-    }
-);
-
-
-function resetJoystick() {
-
-    joystickX = 0;
-
-    joystickY = 0;
-
-    stick.style.transform =
-        "translate(0,0)";
-
+    stick.style.transform="translate(0,0)";
 }
 
-
-joystick.addEventListener(
-    "pointerup",
-    resetJoystick
-);
-
-joystick.addEventListener(
-    "pointercancel",
-    resetJoystick
-);
+joystick.addEventListener("pointerup",stopJoystick);
+joystick.addEventListener("pointercancel",stopJoystick);
 
 
 /* =====================================================
-   TOUCH LOOK
+   MOBILE BUTTONS
 ===================================================== */
 
-let touchLook = null;
+document.getElementById("grapple")
+.addEventListener("pointerdown",function(e){
 
+    e.preventDefault();
+    grapple();
 
-renderer.domElement.addEventListener(
-    "pointerdown",
-    e => {
+});
 
-        if (
-            e.pointerType ===
-            "touch"
-        ) {
+document.getElementById("pulse")
+.addEventListener("pointerdown",function(e){
 
-            touchLook = {
-                x: e.clientX,
-                y: e.clientY
-            };
+    e.preventDefault();
+    pulse();
 
-        }
-
-    }
-);
-
-
-renderer.domElement.addEventListener(
-    "pointermove",
-    e => {
-
-        if (
-            !touchLook ||
-            e.pointerType !==
-            "touch"
-        ) {
-
-            return;
-
-        }
-
-
-        yaw -=
-            (
-                e.clientX -
-                touchLook.x
-            ) * .006;
-
-
-        pitch -=
-            (
-                e.clientY -
-                touchLook.y
-            ) * .006;
-
-
-        pitch =
-            Math.max(
-                -1.35,
-                Math.min(
-                    1.35,
-                    pitch
-                )
-            );
-
-
-        touchLook = {
-            x: e.clientX,
-            y: e.clientY
-        };
-
-    }
-);
-
-
-renderer.domElement.addEventListener(
-    "pointerup",
-    () => {
-
-        touchLook = null;
-
-    }
-);
+});
 
 
 /* =====================================================
-   ROBOTS
+   WORLD
+===================================================== */
+
+const buildings = [];
+
+function createWorld(){
+
+    buildings.length=0;
+
+    for(let i=0;i<45;i++){
+
+        let x;
+        let y;
+
+        do{
+
+            x=(Math.random()-.5)*1800;
+            y=(Math.random()-.5)*1800;
+
+        }while(Math.hypot(x,y)<300);
+
+        buildings.push({
+
+            x:x,
+            y:y,
+
+            w:80+Math.random()*120,
+            h:80+Math.random()*180,
+
+            type:Math.random()<.5 ? "building":"crate"
+
+        });
+
+    }
+
+}
+
+createWorld();
+
+
+/* =====================================================
+   ENEMIES
 ===================================================== */
 
 const enemies = [];
 
+function createEnemy(){
 
-function createRobot() {
+    const angle =
+        Math.random()*Math.PI*2;
 
-    const robot =
-        new THREE.Group();
+    const distance =
+        450+Math.random()*700;
 
+    return {
 
-    /* Körper */
+        x:player.x+
+            Math.cos(angle)*distance,
 
-    const body =
-        new THREE.Mesh(
+        y:player.y+
+            Math.sin(angle)*distance,
 
-            new THREE.BoxGeometry(
-                1.4,
-                1.7,
-                1.05
-            ),
+        hp:3,
 
-            new THREE.MeshStandardMaterial({
-                color: 0x3e5367,
-                metalness: .5,
-                roughness: .35
-            })
+        speed:35+Math.random()*20,
 
-        );
+        attackCooldown:0,
 
+        knockX:0,
+        knockY:0,
 
-    body.position.y =
-        1.25;
+        size:35
 
+    };
 
-    robot.add(body);
+}
 
+function spawnEnemy(){
 
-    /* Kopf */
+    enemies.push(createEnemy());
 
-    const head =
-        new THREE.Mesh(
+}
 
-            new THREE.BoxGeometry(
-                1.25,
-                .75,
-                1
-            ),
-
-            new THREE.MeshStandardMaterial({
-                color: 0x647b91,
-                metalness: .55,
-                roughness: .3
-            })
-
-        );
-
-
-    head.position.y =
-        2.45;
-
-
-    robot.add(head);
-
-
-    /* Augen */
-
-    const eyeMaterial =
-        new THREE.MeshBasicMaterial({
-            color: 0x45e8ff
-        });
-
-
-    const eye1 =
-        new THREE.Mesh(
-            new THREE.BoxGeometry(
-                .28,
-                .12,
-                .05
-            ),
-            eyeMaterial
-        );
-
-
-    const eye2 =
-        eye1.clone();
-
-
-    eye1.position.set(
-        -.28,
-        2.48,
-        -.51
-    );
-
-
-    eye2.position.set(
-        .28,
-        2.48,
-        -.51
-    );
-
-
-    robot.add(
-        eye1,
-        eye2
-    );
-
-
-    /* Arme */
-
-    const armGeometry =
-        new THREE.BoxGeometry(
-            .35,
-            1.25,
-            .35
-        );
-
-
-    const armMaterial =
-        new THREE.MeshStandardMaterial({
-            color: 0x263747,
-            metalness: .5,
-            roughness: .4
-        });
-
-
-    const leftArm =
-        new THREE.Mesh(
-            armGeometry,
-            armMaterial
-        );
-
-
-    const rightArm =
-        leftArm.clone();
-
-
-    leftArm.position.set(
-        -1,
-        1.35,
-        0
-    );
-
-
-    rightArm.position.set(
-        1,
-        1.35,
-        0
-    );
-
-
-    robot.add(
-        leftArm,
-        rightArm
-    );
-
-
-    /* Beine */
-
-    const legGeometry =
-        new THREE.BoxGeometry(
-            .4,
-            1.1,
-            .45
-        );
-
-
-    const leftLeg =
-        new THREE.Mesh(
-            legGeometry,
-            armMaterial
-        );
-
-
-    const rightLeg =
-        leftLeg.clone();
-
-
-    leftLeg.position.set(
-        -.4,
-        .35,
-        0
-    );
-
-
-    rightLeg.position.set(
-        .4,
-        .35,
-        0
-    );
-
-
-    robot.add(
-        leftLeg,
-        rightLeg
-    );
-
-
-    /* Energie-Ring */
-
-    const ring =
-        new THREE.Mesh(
-
-            new THREE.TorusGeometry(
-                .9,
-                .06,
-                8,
-                24
-            ),
-
-            new THREE.MeshBasicMaterial({
-                color: 0x36d8ff
-            })
-
-        );
-
-
-    ring.rotation.x =
-        Math.PI / 2;
-
-
-    ring.position.y =
-        .15;
-
-
-    robot.add(ring);
-
-
-    return robot;
-
+for(let i=0;i<10;i++){
+    spawnEnemy();
 }
 
 
 /* =====================================================
-   SPAWN ROBOT
+   PROJECTILES
 ===================================================== */
 
-function spawnEnemy() {
+const projectiles = [];
 
-    const enemy =
-        createRobot();
+function shootProjectile(enemy){
 
+    const dx=player.x-enemy.x;
+    const dy=player.y-enemy.y;
 
-    let angle =
-        Math.random() *
-        Math.PI * 2;
+    const len=Math.hypot(dx,dy);
 
+    if(len===0)return;
 
-    let distance =
-        30 +
-        Math.random() * 50;
+    projectiles.push({
 
+        x:enemy.x,
+        y:enemy.y,
 
-    enemy.position.set(
+        vx:dx/len*220,
+        vy:dy/len*220,
 
-        Math.cos(angle) *
-        distance,
+        life:4
 
-        0,
-
-        Math.sin(angle) *
-        distance
-
-    );
-
-
-    enemy.userData = {
-
-        health: 3,
-
-        speed:
-            1.6 +
-            Math.random() *
-            .9,
-
-        attackCooldown: 0,
-
-        stun: 0,
-
-        velocity:
-            new THREE.Vector3(),
-
-        wobble:
-            Math.random() * 10
-
-    };
-
-
-    scene.add(enemy);
-
-    enemies.push(enemy);
-
-}
-
-
-for (
-    let i = 0;
-    i < 10;
-    i++
-) {
-
-    spawnEnemy();
+    });
 
 }
 
@@ -1440,240 +496,26 @@ for (
    PARTICLES
 ===================================================== */
 
-const particles = [];
+const particles=[];
 
+function particlesAt(x,y,count=15){
 
-function createParticles(
-    position,
-    color = 0x38dfff,
-    amount = 12
-) {
+    for(let i=0;i<count;i++){
 
-    for (
-        let i = 0;
-        i < amount;
-        i++
-    ) {
+        const a=Math.random()*Math.PI*2;
+        const speed=40+Math.random()*180;
 
-        const particle =
-            new THREE.Mesh(
+        particles.push({
 
-                new THREE.SphereGeometry(
-                    .06,
-                    5,
-                    5
-                ),
+            x:x,
+            y:y,
 
-                new THREE.MeshBasicMaterial({
-                    color: color
-                })
+            vx:Math.cos(a)*speed,
+            vy:Math.sin(a)*speed,
 
-            );
+            life:.4+Math.random()*.6
 
-
-        particle.position.copy(
-            position
-        );
-
-
-        particle.userData = {
-
-            velocity:
-                new THREE.Vector3(
-                    (Math.random()-.5)*6,
-                    Math.random()*5,
-                    (Math.random()-.5)*6
-                ),
-
-            life: .6
-
-        };
-
-
-        scene.add(
-            particle
-        );
-
-        particles.push(
-            particle
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   PULSE
-===================================================== */
-
-function pulse() {
-
-    if (
-        gameOver
-    ) {
-
-        return;
-
-    }
-
-
-    const direction =
-        new THREE.Vector3(
-            0,
-            0,
-            -1
-        );
-
-
-    direction.applyEuler(
-
-        new THREE.Euler(
-            pitch,
-            yaw,
-            0,
-            "YXZ"
-        )
-
-    );
-
-
-    direction.normalize();
-
-
-    const origin =
-        player.position.clone();
-
-
-    createParticles(
-        origin,
-        0x42ddff,
-        20
-    );
-
-
-    let affected = 0;
-
-
-    for (
-        const enemy of enemies
-    ) {
-
-        const offset =
-            new THREE.Vector3()
-                .subVectors(
-                    enemy.position,
-                    origin
-                );
-
-
-        const distance =
-            offset.length();
-
-
-        if (
-            distance >
-            14
-        ) {
-
-            continue;
-
-        }
-
-
-        offset.normalize();
-
-
-        const facing =
-            direction.dot(
-                offset
-            );
-
-
-        if (
-            facing < .15
-        ) {
-
-            continue;
-
-        }
-
-
-        enemy.userData.stun =
-            .8;
-
-
-        enemy.userData.velocity
-            .copy(offset)
-            .multiplyScalar(
-                18
-            );
-
-
-        enemy.userData.health--;
-
-        affected++;
-
-
-        createParticles(
-            enemy.position
-                .clone()
-                .add(
-                    new THREE.Vector3(
-                        0,
-                        1.5,
-                        0
-                    )
-                ),
-            0x62eaff,
-            14
-        );
-
-
-        if (
-            enemy.userData.health <=
-            0
-        ) {
-
-            destroyEnemy(
-                enemy
-            );
-
-        }
-
-    }
-
-
-    /* Hand animation */
-
-    const hand =
-        document.getElementById(
-            "hand"
-        );
-
-
-    hand.style.transform =
-        "translate(-20px,-20px) rotate(-8deg)";
-
-
-    setTimeout(
-        () => {
-
-            hand.style.transform =
-                "";
-
-        },
-        100
-    );
-
-
-    if (
-        affected > 0
-    ) {
-
-        showMessage(
-            "⚡ IMPULS!"
-        );
+        });
 
     }
 
@@ -1684,469 +526,225 @@ function pulse() {
    GRAPPLE
 ===================================================== */
 
-let grappleLine = null;
+let grappleTarget=null;
+let grappleTimer=0;
 
-let grappleTarget = null;
+function grapple(){
 
-let grappleActive = false;
+    if(gameOver)return;
 
+    let best=null;
+    let bestDistance=Infinity;
 
-function grapple() {
+    for(const b of buildings){
 
-    if (
-        gameOver ||
-        grappleActive
-    ) {
+        const dx=b.x-player.x;
+        const dy=b.y-player.y;
 
-        return;
+        const distance=Math.hypot(dx,dy);
 
-    }
+        if(distance<900 && distance<bestDistance){
 
-
-    const direction =
-        new THREE.Vector3(
-            0,
-            0,
-            -1
-        );
-
-
-    direction.applyEuler(
-
-        new THREE.Euler(
-            pitch,
-            yaw,
-            0,
-            "YXZ"
-        )
-
-    );
-
-
-    direction.normalize();
-
-
-    const raycaster =
-        new THREE.Raycaster(
-
-            player.position,
-            direction,
-            0,
-            80
-
-        );
-
-
-    const hits =
-        raycaster.intersectObjects(
-            obstacles,
-            false
-        );
-
-
-    if (
-        hits.length === 0
-    ) {
-
-        showMessage(
-            "🪝 Kein Ziel"
-        );
-
-        return;
-
-    }
-
-
-    grappleTarget =
-        hits[0].point.clone();
-
-
-    grappleActive =
-        true;
-
-
-    /* Seil */
-
-    const geometry =
-        new THREE.BufferGeometry()
-            .setFromPoints([
-                player.position,
-                grappleTarget
-            ]);
-
-
-    const material =
-        new THREE.LineBasicMaterial({
-            color: 0x4deaff,
-            transparent: true,
-            opacity: .95
-        });
-
-
-    grappleLine =
-        new THREE.Line(
-            geometry,
-            material
-        );
-
-
-    scene.add(
-        grappleLine
-    );
-
-
-    createParticles(
-        grappleTarget,
-        0x4deaff,
-        15
-    );
-
-
-    showMessage(
-        "🪝 GRAPPLE!"
-    );
-
-}
-
-
-/* =====================================================
-   UPDATE GRAPPLE
-===================================================== */
-
-function updateGrapple(
-    delta
-) {
-
-    if (
-        !grappleActive
-    ) {
-
-        return;
-
-    }
-
-
-    const difference =
-        new THREE.Vector3()
-            .subVectors(
-                grappleTarget,
-                player.position
-            );
-
-
-    const distance =
-        difference.length();
-
-
-    if (
-        distance < 2
-    ) {
-
-        endGrapple();
-
-        return;
-
-    }
-
-
-    difference.normalize();
-
-
-    player.position.addScaledVector(
-        difference,
-        Math.min(
-            30 * delta,
-            distance
-        )
-    );
-
-
-    player.position.y =
-        Math.max(
-            1.7,
-            player.position.y
-        );
-
-
-    if (
-        grappleLine
-    ) {
-
-        const positions =
-            grappleLine.geometry
-                .attributes
-                .position;
-
-
-        positions.setXYZ(
-            0,
-            player.position.x,
-            player.position.y,
-            player.position.z
-        );
-
-
-        positions.needsUpdate =
-            true;
-
-    }
-
-}
-
-
-function endGrapple() {
-
-    grappleActive =
-        false;
-
-
-    if (
-        grappleLine
-    ) {
-
-        scene.remove(
-            grappleLine
-        );
-
-
-        grappleLine.geometry.dispose();
-
-        grappleLine.material.dispose();
-
-        grappleLine =
-            null;
-
-    }
-
-
-    grappleTarget =
-        null;
-
-}
-
-
-/* =====================================================
-   DESTROY ENEMY
-===================================================== */
-
-function destroyEnemy(
-    enemy
-) {
-
-    createParticles(
-        enemy.position
-            .clone()
-            .add(
-                new THREE.Vector3(
-                    0,
-                    1.2,
-                    0
-                )
-            ),
-        0x35dfff,
-        24
-    );
-
-
-    const index =
-        enemies.indexOf(
-            enemy
-        );
-
-
-    if (
-        index !== -1
-    ) {
-
-        enemies.splice(
-            index,
-            1
-        );
-
-    }
-
-
-    scene.remove(
-        enemy
-    );
-
-
-    score += 100;
-
-
-    setTimeout(
-        spawnEnemy,
-        700
-    );
-
-}
-
-
-/* =====================================================
-   PARTICLE UPDATE
-===================================================== */
-
-function updateParticles(
-    delta
-) {
-
-    for (
-        let i =
-            particles.length - 1;
-        i >= 0;
-        i--
-    ) {
-
-        const p =
-            particles[i];
-
-
-        p.position.addScaledVector(
-            p.userData.velocity,
-            delta
-        );
-
-
-        p.userData.velocity.y -=
-            8 * delta;
-
-
-        p.userData.life -=
-            delta;
-
-
-        p.scale.setScalar(
-            Math.max(
-                0,
-                p.userData.life
-            )
-        );
-
-
-        if (
-            p.userData.life <= 0
-        ) {
-
-            scene.remove(p);
-
-            p.geometry.dispose();
-
-            p.material.dispose();
-
-            particles.splice(
-                i,
-                1
-            );
+            best=b;
+            bestDistance=distance;
 
         }
 
     }
 
-}
+    if(!best){
 
+        showMessage("🪝 KEIN ZIEL");
+        return;
 
-/* =====================================================
-   MESSAGE
-===================================================== */
+    }
 
-let messageTimeout;
+    grappleTarget={
+        x:best.x,
+        y:best.y
+    };
 
+    grappleTimer=1;
 
-function showMessage(
-    text
-) {
-
-    const message =
-        document.getElementById(
-            "message"
-        );
-
-
-    message.textContent =
-        text;
-
-
-    message.classList.add(
-        "show"
-    );
-
-
-    clearTimeout(
-        messageTimeout
-    );
-
-
-    messageTimeout =
-        setTimeout(
-            () => {
-
-                message.classList.remove(
-                    "show"
-                );
-
-            },
-            700
-        );
+    showMessage("🪝 GRAPPLE!");
 
 }
 
 
 /* =====================================================
-   RESET
+   PULSE
 ===================================================== */
 
-function resetGame() {
+function pulse(){
 
-    player.position.set(
-        0,
-        1.7,
-        8
-    );
+    if(gameOver)return;
 
+    const range=330;
 
-    yaw = 0;
+    particlesAt(player.x,player.y,25);
 
-    pitch = 0;
+    let hitSomething=false;
 
-    hp = 100;
+    for(const enemy of [...enemies]){
 
-    score = 0;
+        const dx=enemy.x-player.x;
+        const dy=enemy.y-player.y;
 
-    gameOver = false;
+        const distance=Math.hypot(dx,dy);
 
+        if(distance>range)continue;
 
-    endGrapple();
+        const angleToEnemy=Math.atan2(dy,dx);
 
+        let diff =
+            normalizeAngle(
+                angleToEnemy-player.angle
+            );
 
-    for (
-        const enemy of enemies
-    ) {
+        if(Math.abs(diff)>1.2)continue;
 
-        scene.remove(
-            enemy
+        hitSomething=true;
+
+        enemy.hp--;
+
+        const power=500;
+
+        enemy.knockX =
+            Math.cos(angleToEnemy)*power;
+
+        enemy.knockY =
+            Math.sin(angleToEnemy)*power;
+
+        particlesAt(
+            enemy.x,
+            enemy.y,
+            12
         );
 
+        if(enemy.hp<=0){
+
+            score+=100;
+
+            const index=enemies.indexOf(enemy);
+
+            if(index!==-1){
+                enemies.splice(index,1);
+            }
+
+            setTimeout(spawnEnemy,600);
+
+        }
+
     }
 
+    if(hitSomething){
+        showMessage("⚡ TREFFER!");
+    }
 
-    enemies.length =
-        0;
+}
 
 
-    for (
-        let i = 0;
-        i < 10;
-        i++
-    ) {
+/* =====================================================
+   ANGLE
+===================================================== */
 
-        spawnEnemy();
+function normalizeAngle(a){
+
+    while(a>Math.PI)a-=Math.PI*2;
+    while(a<-Math.PI)a+=Math.PI*2;
+
+    return a;
+
+}
+
+
+/* =====================================================
+   PLAYER UPDATE
+===================================================== */
+
+function updatePlayer(dt){
+
+    if(gameOver)return;
+
+    let forward=0;
+    let strafe=0;
+
+    if(keys.KeyW)forward+=1;
+    if(keys.KeyS)forward-=1;
+
+    if(keys.KeyA)strafe-=1;
+    if(keys.KeyD)strafe+=1;
+
+    /*
+       Joystick:
+       oben = -1
+       unten = +1
+
+       Deshalb wird Y umgedreht.
+    */
+
+    forward-=joyY;
+    strafe+=joyX;
+
+    const length=Math.hypot(forward,strafe);
+
+    if(length>1){
+
+        forward/=length;
+        strafe/=length;
 
     }
 
+    const speed=player.speed*60*dt;
 
-    showMessage(
-        "NEUES SPIEL"
-    );
+    const forwardX=Math.cos(player.angle);
+    const forwardY=Math.sin(player.angle);
+
+    const rightX=-Math.sin(player.angle);
+    const rightY=Math.cos(player.angle);
+
+    player.x +=
+        (forwardX*forward+
+         rightX*strafe)*speed;
+
+    player.y +=
+        (forwardY*forward+
+         rightY*strafe)*speed;
+
+
+    /* Grapple */
+
+    if(grappleTarget && grappleTimer>0){
+
+        const dx=
+            grappleTarget.x-player.x;
+
+        const dy=
+            grappleTarget.y-player.y;
+
+        const distance=
+            Math.hypot(dx,dy);
+
+        if(distance<40){
+
+            grappleTarget=null;
+            grappleTimer=0;
+
+        }else{
+
+            const pull=500*dt;
+
+            player.x +=
+                dx/distance*pull;
+
+            player.y +=
+                dy/distance*pull;
+
+        }
+
+        grappleTimer-=dt;
+
+    }
 
 }
 
@@ -2155,154 +753,410 @@ function resetGame() {
    ENEMY UPDATE
 ===================================================== */
 
-function updateEnemies(
-    delta
-) {
+function updateEnemies(dt){
 
-    for (
-        const enemy of enemies
-    ) {
+    if(gameOver)return;
 
-        const data =
-            enemy.userData;
+    for(const enemy of enemies){
+
+        const dx=player.x-enemy.x;
+        const dy=player.y-enemy.y;
+
+        const distance=Math.hypot(dx,dy);
+
+        if(distance>0){
+
+            enemy.x +=
+                dx/distance*
+                enemy.speed*
+                dt;
+
+            enemy.y +=
+                dy/distance*
+                enemy.speed*
+                dt;
+
+        }
+
+        /* Knockback */
+
+        enemy.x +=
+            enemy.knockX*dt;
+
+        enemy.y +=
+            enemy.knockY*dt;
+
+        enemy.knockX*=.88;
+        enemy.knockY*=.88;
 
 
-        /* Stun */
+        /* Angriff */
 
-        if (
-            data.stun > 0
-        ) {
+        enemy.attackCooldown-=dt;
 
-            data.stun -=
-                delta;
+        if(distance<180){
+
+            if(
+                enemy.attackCooldown<=0
+            ){
+
+                shootProjectile(enemy);
+
+                enemy.attackCooldown=1.3;
+
+            }
+
+        }
+
+    }
+
+}
 
 
-            enemy.position
-                .addScaledVector(
-                    data.velocity,
-                    delta
-                );
+/* =====================================================
+   PROJECTILE UPDATE
+===================================================== */
 
+function updateProjectiles(dt){
 
-            data.velocity.multiplyScalar(
-                Math.pow(
-                    .04,
-                    delta
-                )
+    for(let i=projectiles.length-1;i>=0;i--){
+
+        const p=projectiles[i];
+
+        p.x+=p.vx*dt;
+        p.y+=p.vy*dt;
+
+        p.life-=dt;
+
+        const distance=
+            Math.hypot(
+                p.x-player.x,
+                p.y-player.y
             );
 
+        if(distance<25){
+
+            player.hp-=8;
+
+            particlesAt(
+                player.x,
+                player.y,
+                10
+            );
+
+            projectiles.splice(i,1);
+
+            showMessage("⚠️ GETROFFEN!");
+
+            if(player.hp<=0){
+
+                player.hp=0;
+                gameOver=true;
+
+                showMessage(
+                    "GAME OVER — R drücken"
+                );
+
+            }
 
             continue;
 
         }
 
+        if(p.life<=0){
 
-        const direction =
-            new THREE.Vector3()
-                .subVectors(
-                    player.position,
-                    enemy.position
-                );
-
-
-        const distance =
-            direction.length();
-
-
-        if (
-            distance >
-            .1
-        ) {
-
-            direction.normalize();
+            projectiles.splice(i,1);
 
         }
 
+    }
 
-        /* Verfolgung */
+}
 
-        if (
-            distance <
-            55
-        ) {
 
-            enemy.position
-                .addScaledVector(
-                    direction,
-                    data.speed *
-                    delta
-                );
+/* =====================================================
+   PARTICLE UPDATE
+===================================================== */
+
+function updateParticles(dt){
+
+    for(let i=particles.length-1;i>=0;i--){
+
+        const p=particles[i];
+
+        p.x+=p.vx*dt;
+        p.y+=p.vy*dt;
+
+        p.vx*=.94;
+        p.vy*=.94;
+
+        p.life-=dt;
+
+        if(p.life<=0){
+
+            particles.splice(i,1);
 
         }
 
+    }
 
-        enemy.lookAt(
-            player.position.x,
-            enemy.position.y,
-            player.position.z
+}
+
+
+/* =====================================================
+   CAMERA / DRAW
+===================================================== */
+
+function worldToScreen(x,y){
+
+    const dx=x-player.x;
+    const dy=y-player.y;
+
+    const cos=Math.cos(-player.angle);
+    const sin=Math.sin(-player.angle);
+
+    const rx=dx*cos-dy*sin;
+    const ry=dx*sin+dy*cos;
+
+    return {
+        x:W/2+rx*.55,
+        y:H/2+ry*.55,
+        depth:Math.hypot(rx,ry)
+    };
+
+}
+
+
+/* =====================================================
+   DRAW BACKGROUND
+===================================================== */
+
+function drawBackground(){
+
+    const gradient=
+        ctx.createLinearGradient(
+            0,0,0,H
+        );
+
+    gradient.addColorStop(
+        0,
+        "#162b42"
+    );
+
+    gradient.addColorStop(
+        .55,
+        "#25394a"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#101820"
+    );
+
+    ctx.fillStyle=gradient;
+
+    ctx.fillRect(
+        0,0,W,H
+    );
+
+}
+
+
+/* =====================================================
+   DRAW GROUND GRID
+===================================================== */
+
+function drawGrid(){
+
+    ctx.save();
+
+    ctx.translate(W/2,H/2);
+
+    ctx.rotate(-player.angle);
+
+    const size=100;
+    const spacing=100;
+
+    ctx.strokeStyle=
+        "rgba(100,180,220,.15)";
+
+    ctx.lineWidth=1;
+
+    for(
+        let x=-1500;
+        x<=1500;
+        x+=spacing
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x*.55,
+            -1500*.55
+        );
+
+        ctx.lineTo(
+            x*.55,
+            1500*.55
+        );
+
+        ctx.stroke();
+
+    }
+
+    for(
+        let y=-1500;
+        y<=1500;
+        y+=spacing
+    ){
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            -1500*.55,
+            y*.55
+        );
+
+        ctx.lineTo(
+            1500*.55,
+            y*.55
+        );
+
+        ctx.stroke();
+
+    }
+
+    ctx.restore();
+
+}
+
+
+/* =====================================================
+   DRAW BUILDINGS
+===================================================== */
+
+function drawBuildings(){
+
+    const sorted=
+        [...buildings]
+        .sort(
+            (a,b)=>{
+
+                const da=
+                    Math.hypot(
+                        a.x-player.x,
+                        a.y-player.y
+                    );
+
+                const db=
+                    Math.hypot(
+                        b.x-player.x,
+                        b.y-player.y
+                    );
+
+                return db-da;
+
+            }
         );
 
 
-        /* Laufanimation */
+    for(const b of sorted){
 
-        data.wobble +=
-            delta * 8;
-
-
-        enemy.position.y =
-            Math.sin(
-                data.wobble
-            ) * .035;
-
-
-        /* Kontakt */
-
-        data.attackCooldown -=
-            delta;
-
-
-        if (
-            distance < 3.2 &&
-            data.attackCooldown <= 0
-        ) {
-
-            hp -= 10;
-
-            data.attackCooldown =
-                1.1;
-
-
-            createParticles(
-                player.position
-                    .clone()
-                    .add(
-                        new THREE.Vector3(
-                            0,
-                            1,
-                            0
-                        )
-                    ),
-                0xff5c68,
-                10
+        const s=
+            worldToScreen(
+                b.x,
+                b.y
             );
 
+        if(
+            s.x<-300 ||
+            s.x>W+300 ||
+            s.y<-300 ||
+            s.y>H+300
+        ){
+            continue;
+        }
 
-            showMessage(
-                "⚠️ GETROFFEN!"
+        const size=
+            Math.max(
+                12,
+                16000/
+                Math.max(
+                    s.depth,
+                    50
+                )
             );
 
+        const height=
+            size*
+            (b.h/150);
 
-            if (
-                hp <= 0
-            ) {
 
-                hp = 0;
+        ctx.fillStyle=
+            b.type==="building"
+            ? "#34495e"
+            : "#795548";
 
-                gameOver =
-                    true;
+        ctx.fillRect(
+            s.x-size/2,
+            s.y-height,
+            size,
+            height
+        );
 
-                showMessage(
-                    "GAME OVER — R drücken"
+
+        ctx.fillStyle=
+            b.type==="building"
+            ? "#253746"
+            : "#5d4037";
+
+        ctx.fillRect(
+            s.x-size/2,
+            s.y-height,
+            size,
+            8
+        );
+
+
+        if(
+            b.type==="building"
+        ){
+
+            ctx.fillStyle=
+                "#55d6ff";
+
+            for(
+                let row=0;
+                row<3;
+                row++
+            ){
+
+                ctx.fillRect(
+
+                    s.x-size*.3,
+
+                    s.y-height+
+                    20+
+                    row*25,
+
+                    size*.12,
+
+                    10
+
+                );
+
+                ctx.fillRect(
+
+                    s.x,
+
+                    s.y-height+
+                    20+
+                    row*25,
+
+                    size*.12,
+
+                    10
+
                 );
 
             }
@@ -2315,142 +1169,391 @@ function updateEnemies(
 
 
 /* =====================================================
-   PLAYER MOVEMENT
+   DRAW ENEMIES
 ===================================================== */
 
-function updatePlayer(
-    delta
-) {
+function drawEnemies(){
 
-    if (
-        gameOver
-    ) {
+    for(const enemy of enemies){
 
-        return;
+        const s=
+            worldToScreen(
+                enemy.x,
+                enemy.y
+            );
+
+        if(
+            s.x<-100 ||
+            s.x>W+100 ||
+            s.y<-100 ||
+            s.y>H+100
+        ){
+            continue;
+        }
+
+        const size=
+            Math.max(
+                15,
+                18000/
+                Math.max(
+                    s.depth,
+                    50
+                )
+            );
+
+
+        /* Schatten */
+
+        ctx.fillStyle=
+            "rgba(0,0,0,.35)";
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+            s.x,
+            s.y+size*.35,
+            size*.45,
+            size*.15,
+            0,0,Math.PI*2
+        );
+
+        ctx.fill();
+
+
+        /* Körper */
+
+        ctx.fillStyle="#566b7f";
+
+        ctx.fillRect(
+            s.x-size*.32,
+            s.y-size*.05,
+            size*.64,
+            size*.65
+        );
+
+
+        /* Kopf */
+
+        ctx.fillStyle="#71879b";
+
+        ctx.fillRect(
+            s.x-size*.38,
+            s.y-size*.55,
+            size*.76,
+            size*.42
+        );
+
+
+        /* Augen */
+
+        ctx.fillStyle="#44eaff";
+
+        ctx.fillRect(
+            s.x-size*.23,
+            s.y-size*.42,
+            size*.13,
+            size*.07
+        );
+
+        ctx.fillRect(
+            s.x+size*.10,
+            s.y-size*.42,
+            size*.13,
+            size*.07
+        );
+
+
+        /* Arme */
+
+        ctx.fillStyle="#304354";
+
+        ctx.fillRect(
+            s.x-size*.52,
+            s.y,
+            size*.16,
+            size*.55
+        );
+
+        ctx.fillRect(
+            s.x+size*.36,
+            s.y,
+            size*.16,
+            size*.55
+        );
+
+
+        /* Beine */
+
+        ctx.fillRect(
+            s.x-size*.25,
+            s.y+size*.6,
+            size*.17,
+            size*.45
+        );
+
+        ctx.fillRect(
+            s.x+size*.08,
+            s.y+size*.6,
+            size*.17,
+            size*.45
+        );
+
+
+        /* Lebensanzeige */
+
+        ctx.fillStyle="#222";
+
+        ctx.fillRect(
+            s.x-size*.45,
+            s.y-size*.78,
+            size*.9,
+            6
+        );
+
+        ctx.fillStyle="#46e66b";
+
+        ctx.fillRect(
+            s.x-size*.45,
+            s.y-size*.78,
+            size*.3*
+            enemy.hp,
+            6
+        );
 
     }
 
-
-    player.rotation.y =
-        yaw;
+}
 
 
-    let forward = 0;
+/* =====================================================
+   DRAW PROJECTILES
+===================================================== */
 
-    let sideways = 0;
+function drawProjectiles(){
 
+    for(const p of projectiles){
 
-    if (
-        keys.KeyW
-    ) {
+        const s=
+            worldToScreen(
+                p.x,
+                p.y
+            );
 
-        forward += 1;
+        ctx.fillStyle="#ff6b4a";
 
-    }
+        ctx.shadowBlur=15;
+        ctx.shadowColor="#ff4d2e";
 
+        ctx.beginPath();
 
-    if (
-        keys.KeyS
-    ) {
-
-        forward -= 1;
-
-    }
-
-
-    if (
-        keys.KeyA
-    ) {
-
-        sideways -= 1;
-
-    }
-
-
-    if (
-        keys.KeyD
-    ) {
-
-        sideways += 1;
-
-    }
-
-
-    /*
-        W = vorwärts
-        S = rückwärts
-
-        Joystick:
-        hoch = joystickY negativ
-        deshalb:
-        -joystickY = vorwärts
-    */
-
-    forward -=
-        joystickY;
-
-
-    sideways +=
-        joystickX;
-
-
-    const movement =
-        new THREE.Vector3(
-            sideways,
+        ctx.arc(
+            s.x,
+            s.y,
+            7,
             0,
-            -forward
+            Math.PI*2
         );
 
+        ctx.fill();
 
-    if (
-        movement.length() > 1
-    ) {
-
-        movement.normalize();
+        ctx.shadowBlur=0;
 
     }
 
-
-    movement.multiplyScalar(
-        10.5 * delta
-    );
+}
 
 
-    movement.applyAxisAngle(
-        new THREE.Vector3(
+/* =====================================================
+   DRAW PARTICLES
+===================================================== */
+
+function drawParticles(){
+
+    for(const p of particles){
+
+        const s=
+            worldToScreen(
+                p.x,
+                p.y
+            );
+
+        ctx.fillStyle=
+            "rgba(70,220,255,"+
+            Math.max(0,p.life)+
+            ")";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            s.x,
+            s.y,
+            4,
             0,
-            1,
-            0
-        ),
-        yaw
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+    }
+
+}
+
+
+/* =====================================================
+   DRAW GRAPPLE
+===================================================== */
+
+function drawGrapple(){
+
+    if(!grappleTarget)return;
+
+    const s=
+        worldToScreen(
+            grappleTarget.x,
+            grappleTarget.y
+        );
+
+    ctx.strokeStyle="#4deaff";
+
+    ctx.lineWidth=4;
+
+    ctx.shadowBlur=12;
+    ctx.shadowColor="#4deaff";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W/2,
+        H/2
+    );
+
+    ctx.lineTo(
+        s.x,
+        s.y
+    );
+
+    ctx.stroke();
+
+    ctx.shadowBlur=0;
+
+    ctx.fillStyle="#66efff";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        s.x,
+        s.y,
+        9,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+}
+
+
+/* =====================================================
+   DRAW PLAYER HAND
+===================================================== */
+
+function drawHand(){
+
+    const x=W-120;
+    const y=H-80;
+
+    ctx.save();
+
+    ctx.translate(x,y);
+
+    ctx.rotate(-.25);
+
+    /* Arm */
+
+    ctx.fillStyle="#26394a";
+
+    ctx.fillRect(
+        -35,
+        10,
+        75,
+        170
     );
 
 
-    player.position.add(
-        movement
+    /* Glove */
+
+    ctx.fillStyle="#60798f";
+
+    ctx.beginPath();
+
+    ctx.roundRect(
+        -70,
+        -45,
+        125,
+        90,
+        25
     );
 
-
-    player.position.y =
-        1.7;
+    ctx.fill();
 
 
-    /* Arena Grenze */
+    /* Grapple device */
 
-    player.position.x =
-        THREE.MathUtils.clamp(
-            player.position.x,
-            -105,
-            105
-        );
+    ctx.fillStyle="#1a9fff";
+
+    ctx.shadowBlur=20;
+    ctx.shadowColor="#36dfff";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        -20,-30
+    );
+
+    ctx.lineTo(
+        15,5
+    );
+
+    ctx.lineTo(
+        -20,40
+    );
+
+    ctx.lineTo(
+        -55,5
+    );
+
+    ctx.closePath();
+
+    ctx.fill();
+
+    ctx.shadowBlur=0;
+
+    ctx.restore();
+
+}
 
 
-    player.position.z =
-        THREE.MathUtils.clamp(
-            player.position.z,
-            -105,
-            105
-        );
+/* =====================================================
+   DRAW
+===================================================== */
+
+function draw(){
+
+    drawBackground();
+
+    drawGrid();
+
+    drawBuildings();
+
+    drawEnemies();
+
+    drawProjectiles();
+
+    drawParticles();
+
+    drawGrapple();
+
+    drawHand();
 
 }
 
@@ -2459,138 +1562,102 @@ function updatePlayer(
    HUD
 ===================================================== */
 
-function updateHUD() {
+function updateHUD(){
 
-    document.getElementById(
-        "hp"
-    ).textContent =
-        Math.ceil(hp);
+    document.getElementById("hp")
+        .textContent=Math.ceil(player.hp);
 
+    document.getElementById("score")
+        .textContent=score;
 
-    document.getElementById(
-        "score"
-    ).textContent =
-        score;
-
-
-    document.getElementById(
-        "enemyCount"
-    ).textContent =
-        enemies.length;
+    document.getElementById("enemies")
+        .textContent=enemies.length;
 
 }
 
 
 /* =====================================================
-   RESIZE
+   MESSAGE
 ===================================================== */
 
-window.addEventListener(
-    "resize",
-    () => {
+let messageTimeout;
 
-        camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
+function showMessage(text){
 
+    const el=
+        document.getElementById("message");
 
-        camera.updateProjectionMatrix();
+    el.textContent=text;
 
+    el.classList.add("show");
 
-        renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
-        );
+    clearTimeout(messageTimeout);
 
-    }
-);
+    messageTimeout=setTimeout(
+        function(){
+            el.classList.remove("show");
+        },
+        800
+    );
+
+}
 
 
 /* =====================================================
-   MOBILE BUTTONS
+   RESET
 ===================================================== */
 
-document
-    .getElementById(
-        "grappleButton"
-    )
-    .addEventListener(
-        "pointerdown",
-        e => {
+function resetGame(){
 
-            e.preventDefault();
+    player.x=0;
+    player.y=0;
+    player.angle=0;
+    player.hp=100;
 
-            grapple();
+    score=0;
+    gameOver=false;
 
-        }
-    );
+    enemies.length=0;
+    projectiles.length=0;
+    particles.length=0;
 
+    grappleTarget=null;
+    grappleTimer=0;
 
-document
-    .getElementById(
-        "pulseButton"
-    )
-    .addEventListener(
-        "pointerdown",
-        e => {
+    for(let i=0;i<10;i++){
+        spawnEnemy();
+    }
 
-            e.preventDefault();
+    showMessage("NEUES SPIEL");
 
-            pulse();
-
-        }
-    );
+}
 
 
 /* =====================================================
    GAME LOOP
 ===================================================== */
 
-const clock =
-    new THREE.Clock();
+let lastTime=performance.now();
 
+function loop(now){
 
-function gameLoop() {
-
-    requestAnimationFrame(
-        gameLoop
-    );
-
-
-    const delta =
+    const dt=
         Math.min(
-            clock.getDelta(),
-            .05
+            (now-lastTime)/1000,
+            .033
         );
 
+    lastTime=now;
 
-    updatePlayer(
-        delta
-    );
+    updatePlayer(dt);
+    updateEnemies(dt);
+    updateProjectiles(dt);
+    updateParticles(dt);
 
-
-    updateGrapple(
-        delta
-    );
-
-
-    updateEnemies(
-        delta
-    );
-
-
-    updateParticles(
-        delta
-    );
-
-
+    draw();
     updateHUD();
 
-
-    renderer.render(
-        scene,
-        camera
-    );
+    requestAnimationFrame(loop);
 
 }
 
@@ -2599,9 +1666,12 @@ function gameLoop() {
    START
 ===================================================== */
 
-gameLoop();
+showMessage("GRAPPLE ARENA");
+
+requestAnimationFrame(loop);
 
 </script>
 
 </body>
 </html>
+```
