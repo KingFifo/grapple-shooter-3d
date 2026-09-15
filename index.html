@@ -3,142 +3,186 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>Grapple Arena</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Grapple Arena - UPDATE 4</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+    box-sizing:border-box;
+    user-select:none;
+    -webkit-user-select:none;
+}
+
 html,body{
     margin:0;
+    padding:0;
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#111;
+    background:#101820;
     font-family:Arial,sans-serif;
     touch-action:none;
 }
+
 canvas{
-    display:block;
+    position:fixed;
+    inset:0;
     width:100%;
     height:100%;
-    background:#17202a;
+    display:block;
 }
+
+#version{
+    position:fixed;
+    top:6px;
+    right:8px;
+    color:rgba(255,255,255,.55);
+    font-size:11px;
+    z-index:20;
+    pointer-events:none;
+}
+
 #hud{
     position:fixed;
     inset:0;
     pointer-events:none;
     color:white;
+    z-index:10;
 }
-#top{
+
+#stats{
     position:absolute;
-    top:15px;
-    left:15px;
-    padding:10px 14px;
-    border-radius:10px;
+    left:12px;
+    top:12px;
     background:rgba(0,0,0,.55);
-    font-size:18px;
+    padding:9px 12px;
+    border-radius:10px;
+    font-size:17px;
     font-weight:bold;
 }
+
 #help{
     position:absolute;
-    top:15px;
-    right:15px;
-    padding:10px 14px;
-    border-radius:10px;
+    right:12px;
+    top:25px;
     background:rgba(0,0,0,.55);
+    padding:9px 12px;
+    border-radius:10px;
     text-align:right;
-    font-size:13px;
+    line-height:1.5;
+    font-size:12px;
 }
+
 #crosshair{
     position:absolute;
     left:50%;
     top:50%;
-    width:28px;
-    height:28px;
+    width:30px;
+    height:30px;
     transform:translate(-50%,-50%);
 }
+
 #crosshair:before,
 #crosshair:after{
     content:"";
     position:absolute;
-    background:white;
-    box-shadow:0 0 5px black;
+    background:#fff;
+    box-shadow:0 0 5px #000;
 }
+
 #crosshair:before{
     width:2px;
-    height:28px;
-    left:13px;
+    height:30px;
+    left:14px;
 }
+
 #crosshair:after{
-    width:28px;
+    width:30px;
     height:2px;
-    top:13px;
+    top:14px;
 }
+
 #message{
     position:absolute;
     top:18%;
     left:50%;
     transform:translateX(-50%);
-    font-size:32px;
-    font-weight:bold;
-    text-shadow:0 3px 8px black;
+    font-size:30px;
+    font-weight:900;
+    text-shadow:0 3px 8px #000;
     opacity:0;
-    transition:.2s;
+    transition:opacity .15s;
 }
-#message.show{opacity:1}
+
+#message.show{
+    opacity:1;
+}
 
 #mobile{
     display:none;
 }
+
 #joystick{
     position:fixed;
-    left:25px;
-    bottom:25px;
+    left:22px;
+    bottom:22px;
     width:140px;
     height:140px;
-    border:3px solid rgba(255,255,255,.35);
+    border:3px solid rgba(255,255,255,.3);
     border-radius:50%;
     background:rgba(255,255,255,.08);
+    z-index:30;
     pointer-events:auto;
 }
+
 #stick{
     position:absolute;
-    width:60px;
-    height:60px;
-    left:37px;
-    top:37px;
+    left:38px;
+    top:38px;
+    width:58px;
+    height:58px;
     border-radius:50%;
     background:rgba(255,255,255,.4);
 }
+
 #buttons{
     position:fixed;
-    right:20px;
-    bottom:25px;
+    right:18px;
+    bottom:22px;
     display:flex;
-    gap:12px;
+    gap:10px;
+    z-index:30;
     pointer-events:auto;
 }
-button{
+
+.gameButton{
     border:0;
     color:white;
-    background:rgba(20,120,200,.8);
+    background:rgba(20,130,220,.8);
     border-radius:16px;
+    font-size:14px;
     font-weight:bold;
-    font-size:15px;
 }
-#grapple{
+
+#grappleButton{
     width:110px;
     height:70px;
 }
-#pulse{
-    width:80px;
-    height:80px;
+
+#pulseButton{
+    width:75px;
+    height:75px;
     border-radius:50%;
 }
 
 @media(pointer:coarse){
-    #mobile{display:block}
-    #help{display:none}
+    #mobile{
+        display:block;
+    }
+
+    #help{
+        display:none;
+    }
 }
 </style>
 </head>
@@ -147,23 +191,28 @@ button{
 
 <canvas id="game"></canvas>
 
+<div id="version">UPDATE 4</div>
+
 <div id="hud">
-    <div id="top">
+
+    <div id="stats">
         ❤️ <span id="hp">100</span>
         &nbsp; ⭐ <span id="score">0</span>
-        &nbsp; 🤖 <span id="enemies">0</span>
+        &nbsp; 🤖 <span id="enemyCount">8</span>
     </div>
 
     <div id="help">
         WASD = Bewegen<br>
-        Maus = Zielen<br>
-        Linksklick / E = Impuls<br>
+        Maus = Drehen<br>
+        E / Linksklick = Schießen<br>
         G = Grapple<br>
         R = Neustart
     </div>
 
     <div id="crosshair"></div>
+
     <div id="message"></div>
+
 </div>
 
 <div id="mobile">
@@ -173,42 +222,84 @@ button{
     </div>
 
     <div id="buttons">
-        <button id="grapple">🪝 GRAPPLE</button>
-        <button id="pulse">⚡</button>
+        <button class="gameButton" id="grappleButton">
+            🪝 GRAPPLE
+        </button>
+
+        <button class="gameButton" id="pulseButton">
+            ⚡
+        </button>
     </div>
 
 </div>
 
 <script>
 
+/* =====================================================
+   UPDATE 4
+   KOMPLETT OHNE EXTERNE BIBLIOTHEKEN
+===================================================== */
+
 "use strict";
+
 
 /* =====================================================
    CANVAS
 ===================================================== */
 
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById("game");
 
-let W = 0;
-let H = 0;
+const ctx =
+    canvas.getContext("2d");
+
+
+let width = 0;
+let height = 0;
+
 
 function resize(){
-    W = window.innerWidth;
-    H = window.innerHeight;
 
-    const dpr = Math.min(window.devicePixelRatio || 1,2);
+    width =
+        window.innerWidth;
 
-    canvas.width = W*dpr;
-    canvas.height = H*dpr;
+    height =
+        window.innerHeight;
 
-    canvas.style.width = W+"px";
-    canvas.style.height = H+"px";
+    const ratio =
+        Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
 
-    ctx.setTransform(dpr,0,0,dpr,0,0);
+    canvas.width =
+        width * ratio;
+
+    canvas.height =
+        height * ratio;
+
+    canvas.style.width =
+        width + "px";
+
+    canvas.style.height =
+        height + "px";
+
+    ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+    );
 }
 
-window.addEventListener("resize",resize);
+
+window.addEventListener(
+    "resize",
+    resize
+);
+
 resize();
 
 
@@ -217,193 +308,409 @@ resize();
 ===================================================== */
 
 const player = {
+
     x:0,
     y:0,
-    angle:0,
-    hp:100,
-    speed:5
+
+    angle:-Math.PI/2,
+
+    speed:260,
+
+    hp:100
+
 };
 
+
 let score = 0;
+
 let gameOver = false;
 
 
 /* =====================================================
-   INPUT
+   KEYBOARD
 ===================================================== */
 
 const keys = {};
 
-window.addEventListener("keydown",function(e){
 
-    keys[e.code] = true;
+window.addEventListener(
+    "keydown",
+    function(event){
 
-    if(e.code === "KeyR"){
-        resetGame();
+        keys[event.code] = true;
+
+
+        if(
+            event.code === "KeyR"
+        ){
+
+            resetGame();
+
+        }
+
+
+        if(
+            event.code === "KeyE"
+        ){
+
+            shoot();
+
+        }
+
+
+        if(
+            event.code === "KeyG"
+        ){
+
+            grapple();
+
+        }
+
     }
+);
 
-    if(e.code === "KeyG"){
-        grapple();
+
+window.addEventListener(
+    "keyup",
+    function(event){
+
+        keys[event.code] = false;
+
     }
-
-    if(e.code === "KeyE"){
-        pulse();
-    }
-});
-
-window.addEventListener("keyup",function(e){
-    keys[e.code] = false;
-});
+);
 
 
 /* =====================================================
    MOUSE
 ===================================================== */
 
-let mouseX = W/2;
-let mouseY = H/2;
+let mouseDown = false;
 
-canvas.addEventListener("mousemove",function(e){
 
-    mouseX = e.clientX;
-    mouseY = e.clientY;
+canvas.addEventListener(
+    "pointerdown",
+    function(event){
 
-    const dx = mouseX-W/2;
-    const dy = mouseY-H/2;
+        if(
+            event.pointerType === "mouse"
+        ){
 
-    if(Math.abs(dx)>5){
-        player.angle += dx*0.002;
+            mouseDown = true;
+
+        }
+
     }
+);
 
-});
+
+window.addEventListener(
+    "pointerup",
+    function(){
+
+        mouseDown = false;
+
+    }
+);
 
 
-canvas.addEventListener("click",function(){
+window.addEventListener(
+    "mousemove",
+    function(event){
 
-    pulse();
+        if(
+            event.buttons === 0
+        ){
 
-});
+            return;
+
+        }
+
+        player.angle +=
+            event.movementX * .004;
+
+    }
+);
+
+
+/* =====================================================
+   TOUCH LOOK
+===================================================== */
+
+let lastTouchX = null;
+
+
+canvas.addEventListener(
+    "touchstart",
+    function(event){
+
+        if(
+            event.touches.length
+        ){
+
+            lastTouchX =
+                event.touches[0].clientX;
+
+        }
+
+    },
+    {passive:false}
+);
+
+
+canvas.addEventListener(
+    "touchmove",
+    function(event){
+
+        if(
+            event.touches.length &&
+            lastTouchX !== null
+        ){
+
+            const x =
+                event.touches[0].clientX;
+
+            player.angle +=
+                (x-lastTouchX)*.008;
+
+            lastTouchX = x;
+
+        }
+
+        event.preventDefault();
+
+    },
+    {passive:false}
+);
+
+
+canvas.addEventListener(
+    "touchend",
+    function(){
+
+        lastTouchX = null;
+
+    }
+);
 
 
 /* =====================================================
    MOBILE JOYSTICK
 ===================================================== */
 
-const joystick = document.getElementById("joystick");
-const stick = document.getElementById("stick");
+const joystick =
+    document.getElementById(
+        "joystick"
+    );
 
-let joyX = 0;
-let joyY = 0;
-let joyPointer = null;
+const stick =
+    document.getElementById(
+        "stick"
+    );
 
-function moveJoystick(e){
 
-    const rect = joystick.getBoundingClientRect();
+let joystickX = 0;
+let joystickY = 0;
+let joystickPointer = null;
 
-    const cx = rect.left + rect.width/2;
-    const cy = rect.top + rect.height/2;
 
-    let x = e.clientX-cx;
-    let y = e.clientY-cy;
+function updateJoystick(event){
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+
+    const centerX =
+        rect.left +
+        rect.width/2;
+
+
+    const centerY =
+        rect.top +
+        rect.height/2;
+
+
+    let x =
+        event.clientX -
+        centerX;
+
+
+    let y =
+        event.clientY -
+        centerY;
+
 
     const max = 45;
 
-    const len = Math.hypot(x,y);
+    const distance =
+        Math.hypot(x,y);
 
-    if(len>max){
-        x=x/len*max;
-        y=y/len*max;
+
+    if(
+        distance > max
+    ){
+
+        x =
+            x/distance*max;
+
+        y =
+            y/distance*max;
+
     }
 
-    joyX=x/max;
-    joyY=y/max;
+
+    joystickX =
+        x/max;
+
+    joystickY =
+        y/max;
+
 
     stick.style.transform =
-        `translate(${x}px,${y}px)`;
+        "translate("+x+"px,"+y+"px)";
+
 }
 
-joystick.addEventListener("pointerdown",function(e){
 
-    joyPointer=e.pointerId;
+joystick.addEventListener(
+    "pointerdown",
+    function(event){
 
-    joystick.setPointerCapture(e.pointerId);
+        joystickPointer =
+            event.pointerId;
 
-    moveJoystick(e);
-});
+        joystick.setPointerCapture(
+            event.pointerId
+        );
 
-joystick.addEventListener("pointermove",function(e){
+        updateJoystick(event);
 
-    if(e.pointerId===joyPointer){
-        moveJoystick(e);
     }
+);
 
-});
+
+joystick.addEventListener(
+    "pointermove",
+    function(event){
+
+        if(
+            event.pointerId ===
+            joystickPointer
+        ){
+
+            updateJoystick(event);
+
+        }
+
+    }
+);
+
 
 function stopJoystick(){
 
-    joyX=0;
-    joyY=0;
-    joyPointer=null;
+    joystickX = 0;
+    joystickY = 0;
 
-    stick.style.transform="translate(0,0)";
+    joystickPointer = null;
+
+    stick.style.transform =
+        "translate(0,0)";
+
 }
 
-joystick.addEventListener("pointerup",stopJoystick);
-joystick.addEventListener("pointercancel",stopJoystick);
+
+joystick.addEventListener(
+    "pointerup",
+    stopJoystick
+);
+
+joystick.addEventListener(
+    "pointercancel",
+    stopJoystick
+);
 
 
 /* =====================================================
    MOBILE BUTTONS
 ===================================================== */
 
-document.getElementById("grapple")
-.addEventListener("pointerdown",function(e){
+document
+.getElementById("grappleButton")
+.addEventListener(
+    "pointerdown",
+    function(event){
 
-    e.preventDefault();
-    grapple();
+        event.preventDefault();
 
-});
+        grapple();
 
-document.getElementById("pulse")
-.addEventListener("pointerdown",function(e){
+    }
+);
 
-    e.preventDefault();
-    pulse();
 
-});
+document
+.getElementById("pulseButton")
+.addEventListener(
+    "pointerdown",
+    function(event){
+
+        event.preventDefault();
+
+        shoot();
+
+    }
+);
 
 
 /* =====================================================
-   WORLD
+   MAP
 ===================================================== */
 
 const buildings = [];
 
-function createWorld(){
 
-    buildings.length=0;
+function createMap(){
 
-    for(let i=0;i<45;i++){
+    buildings.length = 0;
+
+
+    for(
+        let i=0;
+        i<35;
+        i++
+    ){
 
         let x;
         let y;
 
+
         do{
 
-            x=(Math.random()-.5)*1800;
-            y=(Math.random()-.5)*1800;
+            x =
+                (Math.random()-.5) *
+                2600;
 
-        }while(Math.hypot(x,y)<300);
+            y =
+                (Math.random()-.5) *
+                2600;
+
+        }
+        while(
+            Math.hypot(x,y)<350
+        );
+
 
         buildings.push({
 
             x:x,
             y:y,
 
-            w:80+Math.random()*120,
-            h:80+Math.random()*180,
+            width:
+                100+
+                Math.random()*150,
 
-            type:Math.random()<.5 ? "building":"crate"
+            height:
+                100+
+                Math.random()*220
 
         });
 
@@ -411,7 +718,8 @@ function createWorld(){
 
 }
 
-createWorld();
+
+createMap();
 
 
 /* =====================================================
@@ -420,45 +728,69 @@ createWorld();
 
 const enemies = [];
 
+
 function createEnemy(){
 
     const angle =
-        Math.random()*Math.PI*2;
+        Math.random() *
+        Math.PI*2;
+
 
     const distance =
-        450+Math.random()*700;
+        650+
+        Math.random()*900;
+
 
     return {
 
-        x:player.x+
-            Math.cos(angle)*distance,
+        x:
+            player.x+
+            Math.cos(angle)*
+            distance,
 
-        y:player.y+
-            Math.sin(angle)*distance,
+        y:
+            player.y+
+            Math.sin(angle)*
+            distance,
 
         hp:3,
 
-        speed:35+Math.random()*20,
+        speed:
+            70+
+            Math.random()*40,
 
-        attackCooldown:0,
+        attackTimer:
+            1+
+            Math.random()*2,
+
+        size:40,
 
         knockX:0,
-        knockY:0,
 
-        size:35
+        knockY:0
 
     };
 
 }
 
+
 function spawnEnemy(){
 
-    enemies.push(createEnemy());
+    enemies.push(
+        createEnemy()
+    );
 
 }
 
-for(let i=0;i<10;i++){
+
+for(
+    let i=0;
+    i<8;
+    i++
+){
+
     spawnEnemy();
+
 }
 
 
@@ -468,22 +800,45 @@ for(let i=0;i<10;i++){
 
 const projectiles = [];
 
-function shootProjectile(enemy){
 
-    const dx=player.x-enemy.x;
-    const dy=player.y-enemy.y;
+function shootProjectile(
+    enemy
+){
 
-    const len=Math.hypot(dx,dy);
+    const dx =
+        player.x -
+        enemy.x;
 
-    if(len===0)return;
+
+    const dy =
+        player.y -
+        enemy.y;
+
+
+    const distance =
+        Math.hypot(dx,dy);
+
+
+    if(
+        distance === 0
+    ){
+
+        return;
+
+    }
+
 
     projectiles.push({
 
         x:enemy.x,
+
         y:enemy.y,
 
-        vx:dx/len*220,
-        vy:dy/len*220,
+        vx:
+            dx/distance*420,
+
+        vy:
+            dy/distance*420,
 
         life:4
 
@@ -493,29 +848,165 @@ function shootProjectile(enemy){
 
 
 /* =====================================================
-   PARTICLES
+   PLAYER SHOOT
 ===================================================== */
 
-const particles=[];
+function shoot(){
 
-function particlesAt(x,y,count=15){
+    if(
+        gameOver
+    ){
 
-    for(let i=0;i<count;i++){
+        return;
 
-        const a=Math.random()*Math.PI*2;
-        const speed=40+Math.random()*180;
+    }
 
-        particles.push({
 
-            x:x,
-            y:y,
+    const range = 900;
 
-            vx:Math.cos(a)*speed,
-            vy:Math.sin(a)*speed,
+    let target = null;
 
-            life:.4+Math.random()*.6
+    let targetDistance =
+        Infinity;
 
-        });
+
+    for(
+        const enemy of enemies
+    ){
+
+        const dx =
+            enemy.x -
+            player.x;
+
+
+        const dy =
+            enemy.y -
+            player.y;
+
+
+        const distance =
+            Math.hypot(dx,dy);
+
+
+        if(
+            distance >
+            range
+        ){
+
+            continue;
+
+        }
+
+
+        const enemyAngle =
+            Math.atan2(
+                dy,
+                dx
+            );
+
+
+        let difference =
+            normalizeAngle(
+                enemyAngle -
+                player.angle
+            );
+
+
+        if(
+            Math.abs(difference)
+            > .35
+        ){
+
+            continue;
+
+        }
+
+
+        if(
+            distance <
+            targetDistance
+        ){
+
+            target =
+                enemy;
+
+            targetDistance =
+                distance;
+
+        }
+
+    }
+
+
+    createParticles(
+        player.x+
+        Math.cos(player.angle)*35,
+
+        player.y+
+        Math.sin(player.angle)*35,
+
+        10
+    );
+
+
+    if(
+        target
+    ){
+
+        target.hp--;
+
+        target.knockX =
+            Math.cos(player.angle)*
+            500;
+
+        target.knockY =
+            Math.sin(player.angle)*
+            500;
+
+
+        createParticles(
+            target.x,
+            target.y,
+            15
+        );
+
+
+        showMessage(
+            "🎯 TREFFER!"
+        );
+
+
+        if(
+            target.hp <= 0
+        ){
+
+            const index =
+                enemies.indexOf(
+                    target
+                );
+
+
+            if(
+                index !== -1
+            ){
+
+                enemies.splice(
+                    index,
+                    1
+                );
+
+            }
+
+
+            score += 100;
+
+
+            setTimeout(
+                spawnEnemy,
+                700
+            );
+
+        }
 
     }
 
@@ -526,134 +1017,146 @@ function particlesAt(x,y,count=15){
    GRAPPLE
 ===================================================== */
 
-let grappleTarget=null;
-let grappleTimer=0;
+let grappleTarget = null;
+
+let grappleTime = 0;
+
 
 function grapple(){
 
-    if(gameOver)return;
+    if(
+        gameOver
+    ){
 
-    let best=null;
-    let bestDistance=Infinity;
-
-    for(const b of buildings){
-
-        const dx=b.x-player.x;
-        const dy=b.y-player.y;
-
-        const distance=Math.hypot(dx,dy);
-
-        if(distance<900 && distance<bestDistance){
-
-            best=b;
-            bestDistance=distance;
-
-        }
-
-    }
-
-    if(!best){
-
-        showMessage("🪝 KEIN ZIEL");
         return;
 
     }
 
-    grappleTarget={
-        x:best.x,
-        y:best.y
-    };
 
-    grappleTimer=1;
+    let best = null;
 
-    showMessage("🪝 GRAPPLE!");
-
-}
+    let bestDistance =
+        Infinity;
 
 
-/* =====================================================
-   PULSE
-===================================================== */
+    for(
+        const building of buildings
+    ){
 
-function pulse(){
+        const dx =
+            building.x -
+            player.x;
 
-    if(gameOver)return;
 
-    const range=330;
+        const dy =
+            building.y -
+            player.y;
 
-    particlesAt(player.x,player.y,25);
 
-    let hitSomething=false;
+        const distance =
+            Math.hypot(dx,dy);
 
-    for(const enemy of [...enemies]){
 
-        const dx=enemy.x-player.x;
-        const dy=enemy.y-player.y;
+        if(
+            distance <
+            1000 &&
+            distance <
+            bestDistance
+        ){
 
-        const distance=Math.hypot(dx,dy);
+            best =
+                building;
 
-        if(distance>range)continue;
-
-        const angleToEnemy=Math.atan2(dy,dx);
-
-        let diff =
-            normalizeAngle(
-                angleToEnemy-player.angle
-            );
-
-        if(Math.abs(diff)>1.2)continue;
-
-        hitSomething=true;
-
-        enemy.hp--;
-
-        const power=500;
-
-        enemy.knockX =
-            Math.cos(angleToEnemy)*power;
-
-        enemy.knockY =
-            Math.sin(angleToEnemy)*power;
-
-        particlesAt(
-            enemy.x,
-            enemy.y,
-            12
-        );
-
-        if(enemy.hp<=0){
-
-            score+=100;
-
-            const index=enemies.indexOf(enemy);
-
-            if(index!==-1){
-                enemies.splice(index,1);
-            }
-
-            setTimeout(spawnEnemy,600);
+            bestDistance =
+                distance;
 
         }
 
     }
 
-    if(hitSomething){
-        showMessage("⚡ TREFFER!");
+
+    if(
+        !best
+    ){
+
+        showMessage(
+            "🪝 KEIN ZIEL"
+        );
+
+        return;
+
     }
+
+
+    grappleTarget = {
+
+        x:best.x,
+
+        y:best.y
+
+    };
+
+
+    grappleTime = 1.5;
+
+
+    showMessage(
+        "🪝 GRAPPLE!"
+    );
 
 }
 
 
 /* =====================================================
-   ANGLE
+   PARTICLES
 ===================================================== */
 
-function normalizeAngle(a){
+const particles = [];
 
-    while(a>Math.PI)a-=Math.PI*2;
-    while(a<-Math.PI)a+=Math.PI*2;
 
-    return a;
+function createParticles(
+    x,
+    y,
+    amount
+){
+
+    for(
+        let i=0;
+        i<amount;
+        i++
+    ){
+
+        const angle =
+            Math.random()*
+            Math.PI*2;
+
+
+        const speed =
+            50+
+            Math.random()*220;
+
+
+        particles.push({
+
+            x:x,
+
+            y:y,
+
+            vx:
+                Math.cos(angle)*
+                speed,
+
+            vy:
+                Math.sin(angle)*
+                speed,
+
+            life:
+                .4+
+                Math.random()*.5
+
+        });
+
+    }
 
 }
 
@@ -662,87 +1165,178 @@ function normalizeAngle(a){
    PLAYER UPDATE
 ===================================================== */
 
-function updatePlayer(dt){
+function updatePlayer(
+    dt
+){
 
-    if(gameOver)return;
+    if(
+        gameOver
+    ){
 
-    let forward=0;
-    let strafe=0;
-
-    if(keys.KeyW)forward+=1;
-    if(keys.KeyS)forward-=1;
-
-    if(keys.KeyA)strafe-=1;
-    if(keys.KeyD)strafe+=1;
-
-    /*
-       Joystick:
-       oben = -1
-       unten = +1
-
-       Deshalb wird Y umgedreht.
-    */
-
-    forward-=joyY;
-    strafe+=joyX;
-
-    const length=Math.hypot(forward,strafe);
-
-    if(length>1){
-
-        forward/=length;
-        strafe/=length;
+        return;
 
     }
 
-    const speed=player.speed*60*dt;
 
-    const forwardX=Math.cos(player.angle);
-    const forwardY=Math.sin(player.angle);
+    let forward = 0;
 
-    const rightX=-Math.sin(player.angle);
-    const rightY=Math.cos(player.angle);
+    let strafe = 0;
+
+
+    if(
+        keys.KeyW
+    ){
+
+        forward += 1;
+
+    }
+
+
+    if(
+        keys.KeyS
+    ){
+
+        forward -= 1;
+
+    }
+
+
+    if(
+        keys.KeyA
+    ){
+
+        strafe -= 1;
+
+    }
+
+
+    if(
+        keys.KeyD
+    ){
+
+        strafe += 1;
+
+    }
+
+
+    /*
+       Joystick:
+       oben = vorwärts
+       unten = rückwärts
+    */
+
+    forward -=
+        joystickY;
+
+    strafe +=
+        joystickX;
+
+
+    const length =
+        Math.hypot(
+            forward,
+            strafe
+        );
+
+
+    if(
+        length > 1
+    ){
+
+        forward /=
+            length;
+
+        strafe /=
+            length;
+
+    }
+
+
+    const cos =
+        Math.cos(
+            player.angle
+        );
+
+
+    const sin =
+        Math.sin(
+            player.angle
+        );
+
 
     player.x +=
-        (forwardX*forward+
-         rightX*strafe)*speed;
+        (
+            cos*forward -
+            sin*strafe
+        )*
+        player.speed*
+        dt;
+
 
     player.y +=
-        (forwardY*forward+
-         rightY*strafe)*speed;
+        (
+            sin*forward +
+            cos*strafe
+        )*
+        player.speed*
+        dt;
 
 
     /* Grapple */
 
-    if(grappleTarget && grappleTimer>0){
+    if(
+        grappleTarget &&
+        grappleTime > 0
+    ){
 
-        const dx=
-            grappleTarget.x-player.x;
+        const dx =
+            grappleTarget.x -
+            player.x;
 
-        const dy=
-            grappleTarget.y-player.y;
 
-        const distance=
+        const dy =
+            grappleTarget.y -
+            player.y;
+
+
+        const distance =
             Math.hypot(dx,dy);
 
-        if(distance<40){
 
-            grappleTarget=null;
-            grappleTimer=0;
+        if(
+            distance < 30
+        ){
 
-        }else{
+            grappleTarget =
+                null;
 
-            const pull=500*dt;
+            grappleTime =
+                0;
+
+        }
+        else{
+
+            const pull =
+                Math.min(
+                    850*dt,
+                    distance
+                );
+
 
             player.x +=
-                dx/distance*pull;
+                dx/distance*
+                pull;
+
 
             player.y +=
-                dy/distance*pull;
+                dy/distance*
+                pull;
 
         }
 
-        grappleTimer-=dt;
+
+        grappleTime -=
+            dt;
 
     }
 
@@ -753,23 +1347,46 @@ function updatePlayer(dt){
    ENEMY UPDATE
 ===================================================== */
 
-function updateEnemies(dt){
+function updateEnemies(
+    dt
+){
 
-    if(gameOver)return;
+    if(
+        gameOver
+    ){
 
-    for(const enemy of enemies){
+        return;
 
-        const dx=player.x-enemy.x;
-        const dy=player.y-enemy.y;
+    }
 
-        const distance=Math.hypot(dx,dy);
 
-        if(distance>0){
+    for(
+        const enemy of enemies
+    ){
+
+        const dx =
+            player.x -
+            enemy.x;
+
+
+        const dy =
+            player.y -
+            enemy.y;
+
+
+        const distance =
+            Math.hypot(dx,dy);
+
+
+        if(
+            distance > 0
+        ){
 
             enemy.x +=
                 dx/distance*
                 enemy.speed*
                 dt;
+
 
             enemy.y +=
                 dy/distance*
@@ -778,33 +1395,57 @@ function updateEnemies(dt){
 
         }
 
+
         /* Knockback */
 
         enemy.x +=
-            enemy.knockX*dt;
+            enemy.knockX*
+            dt;
 
         enemy.y +=
-            enemy.knockY*dt;
-
-        enemy.knockX*=.88;
-        enemy.knockY*=.88;
+            enemy.knockY*
+            dt;
 
 
-        /* Angriff */
+        enemy.knockX *=
+            Math.pow(.02,dt);
 
-        enemy.attackCooldown-=dt;
+        enemy.knockY *=
+            Math.pow(.02,dt);
 
-        if(distance<180){
 
-            if(
-                enemy.attackCooldown<=0
-            ){
+        /* Gegner schießt */
 
-                shootProjectile(enemy);
+        enemy.attackTimer -=
+            dt;
 
-                enemy.attackCooldown=1.3;
 
-            }
+        if(
+            distance < 800 &&
+            enemy.attackTimer <= 0
+        ){
+
+            shootProjectile(
+                enemy
+            );
+
+
+            enemy.attackTimer =
+                1.5+
+                Math.random()*
+                1.2;
+
+        }
+
+
+        /* Kontakt */
+
+        if(
+            distance < 55
+        ){
+
+            player.hp -=
+                15*dt;
 
         }
 
@@ -817,55 +1458,84 @@ function updateEnemies(dt){
    PROJECTILE UPDATE
 ===================================================== */
 
-function updateProjectiles(dt){
+function updateProjectiles(
+    dt
+){
 
-    for(let i=projectiles.length-1;i>=0;i--){
+    for(
+        let i=
+            projectiles.length-1;
+        i>=0;
+        i--
+    ){
 
-        const p=projectiles[i];
+        const projectile =
+            projectiles[i];
 
-        p.x+=p.vx*dt;
-        p.y+=p.vy*dt;
 
-        p.life-=dt;
+        projectile.x +=
+            projectile.vx*
+            dt;
 
-        const distance=
+
+        projectile.y +=
+            projectile.vy*
+            dt;
+
+
+        projectile.life -=
+            dt;
+
+
+        const distance =
             Math.hypot(
-                p.x-player.x,
-                p.y-player.y
+                projectile.x-
+                player.x,
+
+                projectile.y-
+                player.y
             );
 
-        if(distance<25){
 
-            player.hp-=8;
+        if(
+            distance < 30
+        ){
 
-            particlesAt(
+            player.hp -=
+                12;
+
+
+            createParticles(
                 player.x,
                 player.y,
-                10
+                12
             );
 
-            projectiles.splice(i,1);
 
-            showMessage("⚠️ GETROFFEN!");
+            projectiles.splice(
+                i,
+                1
+            );
 
-            if(player.hp<=0){
 
-                player.hp=0;
-                gameOver=true;
+            showMessage(
+                "⚠️ GETROFFEN!"
+            );
 
-                showMessage(
-                    "GAME OVER — R drücken"
-                );
-
-            }
 
             continue;
 
         }
 
-        if(p.life<=0){
 
-            projectiles.splice(i,1);
+        if(
+            projectile.life <= 0
+        ){
+
+            projectiles.splice(
+                i,
+                1
+            );
 
         }
 
@@ -878,23 +1548,50 @@ function updateProjectiles(dt){
    PARTICLE UPDATE
 ===================================================== */
 
-function updateParticles(dt){
+function updateParticles(
+    dt
+){
 
-    for(let i=particles.length-1;i>=0;i--){
+    for(
+        let i=
+            particles.length-1;
+        i>=0;
+        i--
+    ){
 
-        const p=particles[i];
+        const particle =
+            particles[i];
 
-        p.x+=p.vx*dt;
-        p.y+=p.vy*dt;
 
-        p.vx*=.94;
-        p.vy*=.94;
+        particle.x +=
+            particle.vx*
+            dt;
 
-        p.life-=dt;
 
-        if(p.life<=0){
+        particle.y +=
+            particle.vy*
+            dt;
 
-            particles.splice(i,1);
+
+        particle.vx *=
+            .94;
+
+        particle.vy *=
+            .94;
+
+
+        particle.life -=
+            dt;
+
+
+        if(
+            particle.life <= 0
+        ){
+
+            particles.splice(
+                i,
+                1
+            );
 
         }
 
@@ -904,24 +1601,60 @@ function updateParticles(dt){
 
 
 /* =====================================================
-   CAMERA / DRAW
+   WORLD TO SCREEN
 ===================================================== */
 
-function worldToScreen(x,y){
+function worldToScreen(
+    x,
+    y
+){
 
-    const dx=x-player.x;
-    const dy=y-player.y;
+    const dx =
+        x-player.x;
 
-    const cos=Math.cos(-player.angle);
-    const sin=Math.sin(-player.angle);
 
-    const rx=dx*cos-dy*sin;
-    const ry=dx*sin+dy*cos;
+    const dy =
+        y-player.y;
+
+
+    const cos =
+        Math.cos(
+            -player.angle
+        );
+
+
+    const sin =
+        Math.sin(
+            -player.angle
+        );
+
+
+    const screenX =
+        dx*cos -
+        dy*sin;
+
+
+    const screenY =
+        dx*sin +
+        dy*cos;
+
 
     return {
-        x:W/2+rx*.55,
-        y:H/2+ry*.55,
-        depth:Math.hypot(rx,ry)
+
+        x:
+            width/2+
+            screenX*.55,
+
+        y:
+            height/2+
+            screenY*.55,
+
+        distance:
+            Math.hypot(
+                screenX,
+                screenY
+            )
+
     };
 
 }
@@ -933,58 +1666,79 @@ function worldToScreen(x,y){
 
 function drawBackground(){
 
-    const gradient=
+    const gradient =
         ctx.createLinearGradient(
-            0,0,0,H
+            0,
+            0,
+            0,
+            height
         );
+
 
     gradient.addColorStop(
         0,
-        "#162b42"
+        "#162d45"
     );
+
 
     gradient.addColorStop(
         .55,
-        "#25394a"
+        "#294052"
     );
+
 
     gradient.addColorStop(
         1,
-        "#101820"
+        "#11191f"
     );
 
-    ctx.fillStyle=gradient;
+
+    ctx.fillStyle =
+        gradient;
+
 
     ctx.fillRect(
-        0,0,W,H
+        0,
+        0,
+        width,
+        height
     );
 
 }
 
 
 /* =====================================================
-   DRAW GROUND GRID
+   DRAW GRID
 ===================================================== */
 
 function drawGrid(){
 
     ctx.save();
 
-    ctx.translate(W/2,H/2);
+    ctx.translate(
+        width/2,
+        height/2
+    );
 
-    ctx.rotate(-player.angle);
 
-    const size=100;
-    const spacing=100;
+    ctx.rotate(
+        -player.angle
+    );
 
-    ctx.strokeStyle=
-        "rgba(100,180,220,.15)";
 
-    ctx.lineWidth=1;
+    ctx.strokeStyle =
+        "rgba(130,210,240,.18)";
+
+
+    ctx.lineWidth = 1;
+
+
+    const spacing = 100;
+
 
     for(
-        let x=-1500;
-        x<=1500;
+        let x=-2000;
+        x<=2000;
         x+=spacing
     ){
 
@@ -992,39 +1746,41 @@ function drawGrid(){
 
         ctx.moveTo(
             x*.55,
-            -1500*.55
+            -2000*.55
         );
 
         ctx.lineTo(
             x*.55,
-            1500*.55
+            2000*.55
         );
 
         ctx.stroke();
 
     }
 
+
     for(
-        let y=-1500;
-        y<=1500;
+        let y=-2000;
+        y<=2000;
         y+=spacing
     ){
 
         ctx.beginPath();
 
         ctx.moveTo(
-            -1500*.55,
+            -2000*.55,
             y*.55
         );
 
         ctx.lineTo(
-            1500*.55,
+            2000*.55,
             y*.55
         );
 
         ctx.stroke();
 
     }
+
 
     ctx.restore();
 
@@ -1037,129 +1793,146 @@ function drawGrid(){
 
 function drawBuildings(){
 
-    const sorted=
-        [...buildings]
+    const sorted =
+        buildings.slice()
         .sort(
-            (a,b)=>{
+            function(a,b){
 
-                const da=
-                    Math.hypot(
-                        a.x-player.x,
-                        a.y-player.y
-                    );
-
-                const db=
+                return (
                     Math.hypot(
                         b.x-player.x,
                         b.y-player.y
-                    );
-
-                return db-da;
+                    ) -
+                    Math.hypot(
+                        a.x-player.x,
+                        a.y-player.y
+                    )
+                );
 
             }
         );
 
 
-    for(const b of sorted){
+    for(
+        const building of sorted
+    ){
 
-        const s=
+        const screen =
             worldToScreen(
-                b.x,
-                b.y
+                building.x,
+                building.y
             );
 
+
         if(
-            s.x<-300 ||
-            s.x>W+300 ||
-            s.y<-300 ||
-            s.y>H+300
+            screen.x < -300 ||
+            screen.x > width+300 ||
+            screen.y < -300 ||
+            screen.y > height+300
         ){
+
             continue;
+
         }
 
-        const size=
+
+        const size =
             Math.max(
-                12,
-                16000/
+                15,
+                19000/
                 Math.max(
-                    s.depth,
+                    screen.distance,
                     50
                 )
             );
 
-        const height=
+
+        const buildingHeight =
             size*
-            (b.h/150);
+            building.height/
+            180;
 
 
-        ctx.fillStyle=
-            b.type==="building"
-            ? "#34495e"
-            : "#795548";
+        ctx.fillStyle =
+            "#354b5c";
+
 
         ctx.fillRect(
-            s.x-size/2,
-            s.y-height,
+
+            screen.x-size/2,
+
+            screen.y-
+            buildingHeight,
+
             size,
-            height
+
+            buildingHeight
+
         );
 
 
-        ctx.fillStyle=
-            b.type==="building"
-            ? "#253746"
-            : "#5d4037";
+        ctx.fillStyle =
+            "#243746";
+
 
         ctx.fillRect(
-            s.x-size/2,
-            s.y-height,
+
+            screen.x-size/2,
+
+            screen.y-
+            buildingHeight,
+
             size,
+
             8
+
         );
 
 
-        if(
-            b.type==="building"
+        /* Fenster */
+
+        ctx.fillStyle =
+            "#49dfff";
+
+
+        for(
+            let row=0;
+            row<4;
+            row++
         ){
 
-            ctx.fillStyle=
-                "#55d6ff";
+            ctx.fillRect(
 
-            for(
-                let row=0;
-                row<3;
-                row++
-            ){
+                screen.x-
+                size*.28,
 
-                ctx.fillRect(
+                screen.y-
+                buildingHeight+
+                20+
+                row*22,
 
-                    s.x-size*.3,
+                size*.13,
 
-                    s.y-height+
-                    20+
-                    row*25,
+                9
 
-                    size*.12,
+            );
 
-                    10
 
-                );
+            ctx.fillRect(
 
-                ctx.fillRect(
+                screen.x+
+                size*.08,
 
-                    s.x,
+                screen.y-
+                buildingHeight+
+                20+
+                row*22,
 
-                    s.y-height+
-                    20+
-                    row*25,
+                size*.13,
 
-                    size*.12,
+                9
 
-                    10
-
-                );
-
-            }
+            );
 
         }
 
@@ -1174,47 +1947,59 @@ function drawBuildings(){
 
 function drawEnemies(){
 
-    for(const enemy of enemies){
+    for(
+        const enemy of enemies
+    ){
 
-        const s=
+        const screen =
             worldToScreen(
                 enemy.x,
                 enemy.y
             );
 
+
         if(
-            s.x<-100 ||
-            s.x>W+100 ||
-            s.y<-100 ||
-            s.y>H+100
+            screen.x < -150 ||
+            screen.x > width+150 ||
+            screen.y < -150 ||
+            screen.y > height+150
         ){
+
             continue;
+
         }
 
-        const size=
+
+        const size =
             Math.max(
-                15,
-                18000/
+                18,
+                21000/
                 Math.max(
-                    s.depth,
-                    50
+                    screen.distance,
+                    60
                 )
             );
 
 
         /* Schatten */
 
-        ctx.fillStyle=
+        ctx.fillStyle =
             "rgba(0,0,0,.35)";
+
 
         ctx.beginPath();
 
         ctx.ellipse(
-            s.x,
-            s.y+size*.35,
+            screen.x,
+            screen.y+
+            size*.45,
+
             size*.45,
             size*.15,
-            0,0,Math.PI*2
+
+            0,
+            0,
+            Math.PI*2
         );
 
         ctx.fill();
@@ -1222,102 +2007,186 @@ function drawEnemies(){
 
         /* Körper */
 
-        ctx.fillStyle="#566b7f";
+        ctx.fillStyle =
+            "#566d80";
+
 
         ctx.fillRect(
-            s.x-size*.32,
-            s.y-size*.05,
+
+            screen.x-
+            size*.32,
+
+            screen.y-
+            size*.05,
+
             size*.64,
-            size*.65
+
+            size*.62
+
         );
 
 
         /* Kopf */
 
-        ctx.fillStyle="#71879b";
+        ctx.fillStyle =
+            "#7890a3";
+
 
         ctx.fillRect(
-            s.x-size*.38,
-            s.y-size*.55,
-            size*.76,
-            size*.42
+
+            screen.x-
+            size*.4,
+
+            screen.y-
+            size*.58,
+
+            size*.8,
+
+            size*.4
+
         );
 
 
         /* Augen */
 
-        ctx.fillStyle="#44eaff";
+        ctx.fillStyle =
+            "#4ceaff";
+
 
         ctx.fillRect(
-            s.x-size*.23,
-            s.y-size*.42,
-            size*.13,
+
+            screen.x-
+            size*.25,
+
+            screen.y-
+            size*.45,
+
+            size*.14,
+
             size*.07
+
         );
 
+
         ctx.fillRect(
-            s.x+size*.10,
-            s.y-size*.42,
-            size*.13,
+
+            screen.x+
+            size*.11,
+
+            screen.y-
+            size*.45,
+
+            size*.14,
+
             size*.07
+
         );
 
 
         /* Arme */
 
-        ctx.fillStyle="#304354";
+        ctx.fillStyle =
+            "#304354";
+
 
         ctx.fillRect(
-            s.x-size*.52,
-            s.y,
+
+            screen.x-
+            size*.52,
+
+            screen.y,
+
             size*.16,
-            size*.55
+
+            size*.5
+
         );
 
+
         ctx.fillRect(
-            s.x+size*.36,
-            s.y,
+
+            screen.x+
+            size*.36,
+
+            screen.y,
+
             size*.16,
-            size*.55
+
+            size*.5
+
         );
 
 
         /* Beine */
 
         ctx.fillRect(
-            s.x-size*.25,
-            s.y+size*.6,
+
+            screen.x-
+            size*.23,
+
+            screen.y+
+            size*.58,
+
             size*.17,
-            size*.45
+
+            size*.4
+
         );
 
+
         ctx.fillRect(
-            s.x+size*.08,
-            s.y+size*.6,
+
+            screen.x+
+            size*.06,
+
+            screen.y+
+            size*.58,
+
             size*.17,
-            size*.45
+
+            size*.4
+
         );
 
 
-        /* Lebensanzeige */
+        /* HP */
 
-        ctx.fillStyle="#222";
+        ctx.fillStyle =
+            "#111";
+
 
         ctx.fillRect(
-            s.x-size*.45,
-            s.y-size*.78,
+
+            screen.x-
+            size*.45,
+
+            screen.y-
+            size*.78,
+
             size*.9,
+
             6
+
         );
 
-        ctx.fillStyle="#46e66b";
+
+        ctx.fillStyle =
+            "#4be56d";
+
 
         ctx.fillRect(
-            s.x-size*.45,
-            s.y-size*.78,
+
+            screen.x-
+            size*.45,
+
+            screen.y-
+            size*.78,
+
             size*.3*
             enemy.hp,
+
             6
+
         );
 
     }
@@ -1331,24 +2200,34 @@ function drawEnemies(){
 
 function drawProjectiles(){
 
-    for(const p of projectiles){
+    for(
+        const projectile of projectiles
+    ){
 
-        const s=
+        const screen =
             worldToScreen(
-                p.x,
-                p.y
+                projectile.x,
+                projectile.y
             );
 
-        ctx.fillStyle="#ff6b4a";
 
-        ctx.shadowBlur=15;
-        ctx.shadowColor="#ff4d2e";
+        ctx.shadowBlur =
+            18;
+
+
+        ctx.shadowColor =
+            "#ff5738";
+
+
+        ctx.fillStyle =
+            "#ff704d";
+
 
         ctx.beginPath();
 
         ctx.arc(
-            s.x,
-            s.y,
+            screen.x,
+            screen.y,
             7,
             0,
             Math.PI*2
@@ -1356,7 +2235,9 @@ function drawProjectiles(){
 
         ctx.fill();
 
-        ctx.shadowBlur=0;
+
+        ctx.shadowBlur =
+            0;
 
     }
 
@@ -1369,24 +2250,31 @@ function drawProjectiles(){
 
 function drawParticles(){
 
-    for(const p of particles){
+    for(
+        const particle of particles
+    ){
 
-        const s=
+        const screen =
             worldToScreen(
-                p.x,
-                p.y
+                particle.x,
+                particle.y
             );
 
-        ctx.fillStyle=
-            "rgba(70,220,255,"+
-            Math.max(0,p.life)+
+
+        ctx.fillStyle =
+            "rgba(75,220,255,"+
+            Math.max(
+                0,
+                particle.life
+            )+
             ")";
+
 
         ctx.beginPath();
 
         ctx.arc(
-            s.x,
-            s.y,
+            screen.x,
+            screen.y,
             4,
             0,
             Math.PI*2
@@ -1405,45 +2293,67 @@ function drawParticles(){
 
 function drawGrapple(){
 
-    if(!grappleTarget)return;
+    if(
+        !grappleTarget
+    ){
 
-    const s=
+        return;
+
+    }
+
+
+    const target =
         worldToScreen(
             grappleTarget.x,
             grappleTarget.y
         );
 
-    ctx.strokeStyle="#4deaff";
 
-    ctx.lineWidth=4;
+    ctx.strokeStyle =
+        "#50eaff";
 
-    ctx.shadowBlur=12;
-    ctx.shadowColor="#4deaff";
+
+    ctx.lineWidth =
+        4;
+
+
+    ctx.shadowBlur =
+        12;
+
+
+    ctx.shadowColor =
+        "#50eaff";
+
 
     ctx.beginPath();
 
     ctx.moveTo(
-        W/2,
-        H/2
+        width/2,
+        height/2
     );
 
     ctx.lineTo(
-        s.x,
-        s.y
+        target.x,
+        target.y
     );
 
     ctx.stroke();
 
-    ctx.shadowBlur=0;
 
-    ctx.fillStyle="#66efff";
+    ctx.shadowBlur =
+        0;
+
+
+    ctx.fillStyle =
+        "#8af4ff";
+
 
     ctx.beginPath();
 
     ctx.arc(
-        s.x,
-        s.y,
-        9,
+        target.x,
+        target.y,
+        10,
         0,
         Math.PI*2
     );
@@ -1454,43 +2364,59 @@ function drawGrapple(){
 
 
 /* =====================================================
-   DRAW PLAYER HAND
+   DRAW HAND
 ===================================================== */
 
 function drawHand(){
 
-    const x=W-120;
-    const y=H-80;
+    const x =
+        width-100;
+
+    const y =
+        height-65;
+
 
     ctx.save();
 
-    ctx.translate(x,y);
 
-    ctx.rotate(-.25);
-
-    /* Arm */
-
-    ctx.fillStyle="#26394a";
-
-    ctx.fillRect(
-        -35,
-        10,
-        75,
-        170
+    ctx.translate(
+        x,
+        y
     );
 
 
-    /* Glove */
+    ctx.rotate(
+        -.22
+    );
 
-    ctx.fillStyle="#60798f";
+
+    /* Arm */
+
+    ctx.fillStyle =
+        "#26394b";
+
+
+    ctx.fillRect(
+        -30,
+        10,
+        65,
+        150
+    );
+
+
+    /* Hand */
+
+    ctx.fillStyle =
+        "#667f94";
+
 
     ctx.beginPath();
 
     ctx.roundRect(
-        -70,
+        -75,
         -45,
         125,
-        90,
+        85,
         25
     );
 
@@ -1499,34 +2425,48 @@ function drawHand(){
 
     /* Grapple device */
 
-    ctx.fillStyle="#1a9fff";
+    ctx.fillStyle =
+        "#28cfff";
 
-    ctx.shadowBlur=20;
-    ctx.shadowColor="#36dfff";
+
+    ctx.shadowBlur =
+        20;
+
+
+    ctx.shadowColor =
+        "#28cfff";
+
 
     ctx.beginPath();
 
     ctx.moveTo(
-        -20,-30
+        -25,
+        -28
     );
 
     ctx.lineTo(
-        15,5
+        12,
+        5
     );
 
     ctx.lineTo(
-        -20,40
+        -25,
+        38
     );
 
     ctx.lineTo(
-        -55,5
+        -58,
+        5
     );
 
     ctx.closePath();
 
     ctx.fill();
 
-    ctx.shadowBlur=0;
+
+    ctx.shadowBlur =
+        0;
+
 
     ctx.restore();
 
@@ -1534,7 +2474,7 @@ function drawHand(){
 
 
 /* =====================================================
-   DRAW
+   DRAW EVERYTHING
 ===================================================== */
 
 function draw(){
@@ -1564,14 +2504,51 @@ function draw(){
 
 function updateHUD(){
 
-    document.getElementById("hp")
-        .textContent=Math.ceil(player.hp);
+    document.getElementById(
+        "hp"
+    ).textContent =
+        Math.max(
+            0,
+            Math.ceil(
+                player.hp
+            )
+        );
 
-    document.getElementById("score")
-        .textContent=score;
 
-    document.getElementById("enemies")
-        .textContent=enemies.length;
+    document.getElementById(
+        "score"
+    ).textContent =
+        score;
+
+
+    document.getElementById(
+        "enemyCount"
+    ).textContent =
+        enemies.length;
+
+}
+
+
+/* =====================================================
+   GAME OVER
+===================================================== */
+
+function checkGameOver(){
+
+    if(
+        player.hp <= 0 &&
+        !gameOver
+    ){
+
+        player.hp = 0;
+
+        gameOver = true;
+
+        showMessage(
+            "GAME OVER — R DRÜCKEN"
+        );
+
+    }
 
 }
 
@@ -1582,23 +2559,42 @@ function updateHUD(){
 
 let messageTimeout;
 
-function showMessage(text){
 
-    const el=
-        document.getElementById("message");
+function showMessage(
+    text
+){
 
-    el.textContent=text;
+    const element =
+        document.getElementById(
+            "message"
+        );
 
-    el.classList.add("show");
 
-    clearTimeout(messageTimeout);
+    element.textContent =
+        text;
 
-    messageTimeout=setTimeout(
-        function(){
-            el.classList.remove("show");
-        },
-        800
+
+    element.classList.add(
+        "show"
     );
+
+
+    clearTimeout(
+        messageTimeout
+    );
+
+
+    messageTimeout =
+        setTimeout(
+            function(){
+
+                element.classList.remove(
+                    "show"
+                );
+
+            },
+            900
+        );
 
 }
 
@@ -1609,55 +2605,92 @@ function showMessage(text){
 
 function resetGame(){
 
-    player.x=0;
-    player.y=0;
-    player.angle=0;
-    player.hp=100;
+    player.x = 0;
 
-    score=0;
-    gameOver=false;
+    player.y = 0;
 
-    enemies.length=0;
-    projectiles.length=0;
-    particles.length=0;
+    player.angle =
+        -Math.PI/2;
 
-    grappleTarget=null;
-    grappleTimer=0;
+    player.hp = 100;
 
-    for(let i=0;i<10;i++){
+    score = 0;
+
+    gameOver = false;
+
+    grappleTarget = null;
+
+    grappleTime = 0;
+
+    enemies.length = 0;
+
+    projectiles.length = 0;
+
+    particles.length = 0;
+
+
+    for(
+        let i=0;
+        i<8;
+        i++
+    ){
+
         spawnEnemy();
+
     }
 
-    showMessage("NEUES SPIEL");
+
+    showMessage(
+        "UPDATE 4 — START!"
+    );
 
 }
 
 
 /* =====================================================
-   GAME LOOP
+   MAIN LOOP
 ===================================================== */
 
-let lastTime=performance.now();
+let lastTime =
+    performance.now();
 
-function loop(now){
 
-    const dt=
+function gameLoop(
+    currentTime
+){
+
+    const dt =
         Math.min(
-            (now-lastTime)/1000,
+            (currentTime-
+            lastTime)/
+            1000,
+
             .033
         );
 
-    lastTime=now;
+
+    lastTime =
+        currentTime;
+
 
     updatePlayer(dt);
+
     updateEnemies(dt);
+
     updateProjectiles(dt);
+
     updateParticles(dt);
 
+    checkGameOver();
+
     draw();
+
     updateHUD();
 
-    requestAnimationFrame(loop);
+
+    requestAnimationFrame(
+        gameLoop
+    );
 
 }
 
@@ -1666,9 +2699,14 @@ function loop(now){
    START
 ===================================================== */
 
-showMessage("GRAPPLE ARENA");
+showMessage(
+    "UPDATE 4"
+);
 
-requestAnimationFrame(loop);
+
+requestAnimationFrame(
+    gameLoop
+);
 
 </script>
 
